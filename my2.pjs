@@ -1,0 +1,67 @@
+PVector location = new PVector( random( 100, width - 100 ), random( 100, height - 100 ) );
+
+int[] pinkColors 	= new int();
+int[] blueColors 	= new int();
+
+Flagellum body;
+
+void setup() {
+	size( window.innerWidth, window.innerHeight );
+	
+	//frameRate( 30 );
+	
+	pinkColors = [#000000, #E61961, #D8D8C0];
+	blueColors = [#000000, #1693A5, #D8D8C0];
+	
+	// Create flagellum
+	numBodySegments = 10;
+	bodySizeW		= random( 100, 200 );
+	bodySizeH		= bodySizeW * 0.3 + random( 5 );
+
+	body = new Flagellum( bodySizeW, bodySizeH, numBodySegments );
+	
+	colors = pinkColors;
+}
+
+
+void draw() {
+	background( 105, 210, 231, 0 );
+	
+	// render body
+	fill( colors[2] );
+	renderBody( body, location, 1.1, 0.1 );
+}
+
+	void renderBody( Flagellum _flag, PVector _location, float _sizeOffsetA, float _sizeOffsetB ) {
+		pushMatrix();
+		translate( _location.x, _location.y );
+		beginShape( TRIANGLE_STRIP );
+		for ( int n = 0; n < _flag.numNodes; n++ ) {
+			float dx, dy;
+			if ( n == 0 ) {
+				dx = _flag.spine[1][0] - _flag.spine[0][0];
+				dy = _flag.spine[1][1] - _flag.spine[0][1];
+			}
+			else {
+				dx = _flag.spine[n][0] - _flag.spine[n - 1][0];
+				dy = _flag.spine[n][1] - _flag.spine[n - 1][1];
+			}
+			
+			float theta = -atan2( dy, dx );
+			
+			float t 	= n / float(_flag.numNodes - 1);
+			float b		= bezierPoint( 3, bodySizeH * _sizeOffsetA, bodySizeH * _sizeOffsetB, 2, t );
+			
+			float x1	= _flag.spine[n][0] - sin( theta ) * b;
+			float y1 	= _flag.spine[n][1] - cos( theta ) * b;
+			
+			float x2 	= _flag.spine[n][0] + sin( theta ) * b;
+			float y2 	= _flag.spine[n][1] + cos( theta ) * b;
+			
+			vertex( x1, y1 );
+			vertex( x2, y2 );
+		}
+		endShape();
+		
+		popMatrix();
+	}
