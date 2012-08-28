@@ -1,0 +1,33 @@
+PVector ctlPnt = new PVector(0, 0);
+
+PVector upLft0 = new PVector(-25, -100);
+PVector upLft1 = new PVector(-50, -50);
+PVector btmLft1 = new PVector(-50, 50);
+PVector btmLft0 = new PVector(-25, 100);
+
+PVector upRgt0 = new PVector(25, -100);
+PVector upRgt1 = new PVector(50, -50);
+PVector btmRgt1 = new PVector(50, 50);
+PVector btmRgt0 = new PVector(25, 100);
+
+void setup() {
+	//size( window.innerWidth, window.innerHeight );
+	size(500, 500);
+}
+
+void draw() {
+	background(#cccccc);
+	
+	noFill();
+	translate(125, 150);
+	beginShape();
+	vertex(upLft0.x, upLft0.y);
+	vertex(upLft1.x, upLft1.y);
+	vertex(btmLft1.x, btmLft1.y);
+	vertex(btmLft0.x, btmLft0.y);
+	vertex(btmRgt0.x, btmRgt0.y);
+	vertex(btmRgt1.x, btmRgt1.y);
+	vertex(upRgt1.x, upRgt1.y);
+	vertex(upRgt0.x, upRgt0.y);
+	endShape(CLOSE);
+}
