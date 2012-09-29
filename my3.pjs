@@ -13,7 +13,7 @@ void mousePressed() {
 	face.grab(mouseX, mouseY);
 }
 void mouseReleased() {
-	face.leave();
+	face.release();
 }
 
 class Face {
@@ -23,52 +23,70 @@ class Face {
 	boolean grabbed = false;
 
 	PVector pos = new PVector(125, 150);
+	float wdhLmt = 50;
+	float hgtLmt = 100;
 
-	PVector upLft0 = new PVector(-25, -100);
-	PVector upLft1 = new PVector(-50, -50);
-	PVector btmLft1 = new PVector(-50, 50);
-	PVector btmLft0 = new PVector(-25, 100);
+	void grab(float mx, float my) {
+		if (dist((grabber.x + pos.x), (grabber.y + pos.y), mx, my) < 10) {
+			grabbed = true;
+		}
+	}
+	void release() {
+		grabbed = false;
+	}
 
-	PVector upRgt0 = new PVector(25, -100);
-	PVector upRgt1 = new PVector(50, -50);
-	PVector btmRgt1 = new PVector(50, 50);
-	PVector btmRgt0 = new PVector(25, 100);
+	PVector topLft0 = new PVector(-wdhLmt/2, -hgtLmt);
+	PVector topLft0_l = new PVector(-wdhLmt, -hgtLmt);
+	PVector topLft1 = new PVector(-wdhLmt, -hgtLmt/2);
+	PVector topLft1_l = new PVector(-wdhLmt, -hgtLmt/2);
+	PVector btmLft1 = new PVector(-wdhLmt, hgtLmt/2);
+	PVector btmLft1_l = new PVector(-wdhLmt, hgtLmt/2);
+	PVector btmLft0 = new PVector(-wdhLmt/2, hgtLmt);
+	PVector btmLft0_l = new PVector(-wdhLmt, hgtLmt);
+
+	PVector topRgt0 = new PVector(wdhLmt/2, -hgtLmt);
+	PVector topRgt0_l = new PVector(wdhLmt, -hgtLmt);
+	PVector topRgt1 = new PVector(wdhLmt, -hgtLmt/2);
+	PVector topRgt1_l = new PVector(wdhLmt, -hgtLmt/2);
+	PVector btmRgt1 = new PVector(wdhLmt, hgtLmt/2);
+	PVector btmRgt1_l = new PVector(wdhLmt, hgtLmt/2);
+	PVector btmRgt0 = new PVector(wdhLmt/2, hgtLmt);
+	PVector btmRgt0_l = new PVector(0, hgtLmt);
 	
 	void render() {
 		noFill();
+		float ratio = 0;
 		if (grabbed) {
-			pos.x = mouseX;
+			//pos.x = mouseX;
+			ratio = moveRatio();
 			pos.y = mouseY;
 		}
 		translate(pos.x, pos.y);
 		beginShape();
-		vertex(upLft0.x, upLft0.y);
-		vertex(upLft1.x, upLft1.y);
-		vertex(btmLft1.x, btmLft1.y);
-		vertex(btmLft0.x, btmLft0.y);
-		vertex(btmRgt0.x, btmRgt0.y);
-		vertex(btmRgt1.x, btmRgt1.y);
-		vertex(upRgt1.x, upRgt1.y);
-		vertex(upRgt0.x, upRgt0.y);
+		vertex(topLft0.x + (topLft0_l.x - topLft0.x)/ratio, topLft0.y);
+		vertex(topLft1.x + (topLft1_l.x - topLft1.x)/ratio, topLft1.y);
+		vertex(btmLft1.x + (btmLft1_l.x - btmLft1.x)/ratio, btmLft1.y);
+		vertex(btmLft0.x + (btmLft0_l.x - btmLft0.x)/ratio, btmLft0.y);
+		vertex(btmRgt0.x + (btmRgt0_l.x - btmRgt0.x)/ratio, btmRgt0.y);
+		vertex(btmRgt1.x + (btmRgt1_l.x - btmRgt1.x)/ratio, btmRgt1.y);
+		vertex(topRgt1.x + (topRgt1_l.x - topRgt1.x)/ratio, topRgt1.y);
+		vertex(topRgt0.x + (topRgt0_l.x - topRgt0.x)/ratio, topRgt0.y);
 		endShape(CLOSE);
 
 		renderGrabber();
 	}
-	
+
+	float moveRatio() {
+		//return abs((pos.x - mouseX)/wdhLmt);
+		float ratio = (pos.x - mouseX)/wdhLmt;
+		return ((ratio < 0) ? 0 : ratio);
+	}
+
 	void renderGrabber() {
 		strokeWeight(1);
 		fill(204, 102, 0);
 		ellipseMode(CENTER);
 		ellipse(grabber.x, grabber.y, dist4grab, dist4grab);
 	}
-	
-	void grab(float mx, float my) {
-		if (dist((grabber.x + pos.x), (grabber.y + pos.y), mx, my) < 10) {
-			grabbed = true;
-		}
-	}
 
-	void leave() {
-		grabbed = false;
-	}
 }
