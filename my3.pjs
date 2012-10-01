@@ -2,6 +2,7 @@ Face face = new Face();
 void setup() {
 	//size( window.innerWidth, window.innerHeight );
 	size(500, 500);
+	frameRate(10);
 }
 
 void draw() {
@@ -53,33 +54,49 @@ class Face {
 	PVector btmRgt0 = new PVector(wdhLmt/2, hgtLmt);
 	PVector btmRgt0_l = new PVector(0, hgtLmt);
 	
+	PVector topLft0now = new PVector(topLft0.x, topLft0.y);
+	PVector topLft1now = new PVector(topLft1.x, topLft1.y);
+	PVector btmLft1now = new PVector(btmLft1.x, btmLft1.y);
+	PVector btmLft0now = new PVector(btmLft0.x, btmLft0.y);
+	PVector topRgt0now = new PVector(topRgt0.x, topRgt0.y);
+	PVector topRgt1now = new PVector(topRgt1.x, topRgt1.y);
+	PVector btmRgt1now = new PVector(btmRgt1.x, btmRgt1.y);
+	PVector btmRgt0now = new PVector(btmRgt0.x, btmRgt0.y);
+
+	float ratio = 1;
 	void render() {
 		noFill();
-		float ratio = 0;
 		if (grabbed) {
 			//pos.x = mouseX;
-			ratio = moveRatio();
-			pos.y = mouseY;
+			//pos.y = mouseY;
+			topLft0now.x = moveX(topLft0_l.x, topLft0.x);
+			topLft1now.x = moveX(topLft1_l.x, topLft1.x);
+			btmLft1now.x = moveX(btmLft1_l.x, btmLft1.x);
+			btmLft0now.x = moveX(btmLft0_l.x, btmLft0.x);
+			btmRgt0now.x = moveX(btmRgt0_l.x, btmRgt0.x);
+			btmRgt1now.x = moveX(btmRgt1_l.x, btmRgt1.x);
+			topRgt1now.x = moveX(topRgt1_l.x, topRgt1.x);
+			topRgt0now.x = moveX(topRgt0_l.x, topRgt0.x);
 		}
 		translate(pos.x, pos.y);
 		beginShape();
-		vertex(topLft0.x + (topLft0_l.x - topLft0.x)/ratio, topLft0.y);
-		vertex(topLft1.x + (topLft1_l.x - topLft1.x)/ratio, topLft1.y);
-		vertex(btmLft1.x + (btmLft1_l.x - btmLft1.x)/ratio, btmLft1.y);
-		vertex(btmLft0.x + (btmLft0_l.x - btmLft0.x)/ratio, btmLft0.y);
-		vertex(btmRgt0.x + (btmRgt0_l.x - btmRgt0.x)/ratio, btmRgt0.y);
-		vertex(btmRgt1.x + (btmRgt1_l.x - btmRgt1.x)/ratio, btmRgt1.y);
-		vertex(topRgt1.x + (topRgt1_l.x - topRgt1.x)/ratio, topRgt1.y);
-		vertex(topRgt0.x + (topRgt0_l.x - topRgt0.x)/ratio, topRgt0.y);
+		vertex(topLft0now.x, topLft0.y);
+		vertex(topLft1now.x, topLft1.y);
+		vertex(btmLft1now.x, btmLft1.y);
+		vertex(btmLft0now.x, btmLft0.y);
+		vertex(btmRgt0now.x, btmRgt0.y);
+		vertex(btmRgt1now.x, btmRgt1.y);
+		vertex(topRgt1now.x, topRgt1.y);
+		vertex(topRgt0now.x, topRgt0.y);
 		endShape(CLOSE);
 
 		renderGrabber();
 	}
 
-	float moveRatio() {
-		//return abs((pos.x - mouseX)/wdhLmt);
-		float ratio = (pos.x - mouseX)/wdhLmt;
-		return ((ratio < 0) ? 0 : ratio);
+	float moveX(float end, float start) {
+		float draggedDst = abs(pos.x - mouseX);
+		float ratio = draggedDst / wdhLmt;
+		return start + (end - start) * ratio;
 	}
 
 	void renderGrabber() {
