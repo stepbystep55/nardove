@@ -19,22 +19,9 @@ void mouseReleased() {
 
 class Face {
 
-	PVector grabber = new PVector(0, 0);
-	float dist4grab = 10;
-	boolean grabbed = false;
-
 	PVector pos = new PVector(125, 150);
 	float wdhLmt = 50;
 	float hgtLmt = 100;
-
-	void grab(float mx, float my) {
-		if (dist((grabber.x + pos.x), (grabber.y + pos.y), mx, my) < 10) {
-			grabbed = true;
-		}
-	}
-	void release() {
-		grabbed = false;
-	}
 
 	PVector topLft0 = new PVector(-wdhLmt/2, -hgtLmt);
 	PVector topLft0_l = new PVector(-wdhLmt, -hgtLmt);
@@ -96,14 +83,8 @@ class Face {
 	float moveX(float end, float start) {
 		float draggedDst = abs(pos.x - mouseX);
 		float ratio = draggedDst / wdhLmt;
-		return start + (end - start) * ratio;
+		moved = start + (end - start) * ratio;
+		println(moved);
+		return moved;
 	}
-
-	void renderGrabber() {
-		strokeWeight(1);
-		fill(204, 102, 0);
-		ellipseMode(CENTER);
-		ellipse(grabber.x, grabber.y, dist4grab, dist4grab);
-	}
-
 }
