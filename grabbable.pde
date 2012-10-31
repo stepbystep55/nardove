@@ -59,6 +59,13 @@ class Grabbable {
 		return new PVector(grabPos.x - basePos.x, grabPos.y - basePos.y);
 	}
 
+	void vectorMoved(float lmtLftLng) {
+		float px = grabPos.x - basePos.x;
+		if (px < -lmtLftLng) px = -lmtLftLng;
+		float py = grabPos.y - basePos.y;
+		return new PVector(px, py);
+	}
+
 	void render() {
 		render(true);
 	}
