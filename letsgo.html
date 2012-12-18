@@ -1,14 +1,32 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>mine</title>
-		<script src="processing-1.4.1.min.js"></script>
-	</head>
-	<body>
-		<canvas id="the-canvas" data-processing-sources="main.pde grabbable.pde face.pde" resize></canvas>
-		<!--
-		<canvas id="the-canvas" data-processing-sources="hoge.pde" resize></canvas>
-		-->
-	</body>
+<head>
+	<title>mine</title>
+	<script src="processing-1.4.1.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+</head>
+<body>
+	<canvas id="the-canvas" data-processing-sources="main.pde grabbable.pde face.pde" resize></canvas>
+	<!--
+	<canvas id="the-canvas" data-processing-sources="hoge.pde" resize></canvas>
+	-->
+	<hr>
+	<textarea name="txtara" id="txtara" rows="32" cols="128"></textarea>
 
+<script type="text/javascript">
+<!--
+$(function(){
+	jQuery.ajax({
+		url : "./grabbable.pde",
+		type : "get",
+		success : function(data){
+			jsCode = Processing.compile(data).sourceCode;
+			document.getElementById("txtara").innerHTML = jsCode;
+		}
+	});
+});
+// -->
+</script>
+
+</body>
 </html>
