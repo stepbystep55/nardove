@@ -22,22 +22,25 @@ class Torso {
 	PVector c2 = new GVector(100, 50);
 	PVector c3 = new PVector(20, 130);
 	PVector c4 = new PVector(75, 140);
-	PVector p2 = new PVector(50, 100);
+	PVector p2 = new GBzrAnchor(50, 100, c2, c3);
 	PVector p3 = new PVector(120, 120);
 	
 	void grab() {
 		p1.grb();
+		p2.grb();
 		c1.grb();
 		c2.grb();
 	}
 	void release() {
 		p1.rls();
+		p2.rls();
 		c1.rls();
 		c2.rls();
 	}
 
 	void update() {
 		p1.upd();
+		p2.upd();
 		c1.upd();
 		c2.upd();
 	}
