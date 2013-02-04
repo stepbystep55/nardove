@@ -26,9 +26,10 @@ class Gctr extends PVector {
 	}
 
 	// =update
+	// return an array of previous & current points.
+	// i.e. {prev point x, prev point y, curr point x, curr point y}
 	PVector upd() {
-		//float[] prNcr = {0, 0, 0, 0}; // previous & current points
-		float[] prNcr; // previous & current points
+		float[] prNcr;
 		if (_grbd) {
 			prNcr = {super.x, super.y, mouseX, mouseY};
 			super.x = mouseX;
@@ -68,11 +69,8 @@ class GbzrSet extends Gctr {
 
 		float[] prNcr4c1 = _c1.upd();
 		if (prNcr4c1 != null) {
-			PVector pr_a = new PVector(prNcr4c1[0] - super.x, prNcr4c1[1] - super.y);
-			pr_a.normalize();
-			PVector cr_a = new PVector(prNcr4c1[2] - super.x, prNcr4c1[3] - super.y);
-			cr_a.normalize();
-			float mv_rd = atan2(cr_a.y, cr_a.x) - atan2(pr_a.y, pr_a.x);
+			float mv_rd = Utl.ang(super.x, super.y, prNcr4c1[0], prNcr4c1[1], prNcr4c1[2], prNcr4c1[3]);
+			
 			PVector c2_a = PVector.sub(new PVector(_c2.x, _c2.y), new PVector(this.x, this.y));
 			float leng = mag(c2_a.x, c2_a.y);
 			float rd4c2 = atan2(c2_a.y, c2_a.x);
@@ -81,5 +79,13 @@ class GbzrSet extends Gctr {
 		}
 
 		float[] prNcr4c2 = _c2.upd();
+	}
+}
+static class Utl {
+	// = get the angle in radians between the line of origin to point1 and the line of origin to point2
+	static float ang(float ox, float oy, float px, float py, float p2x, float p2y) {
+		PVector o2p = new PVector(px - ox, py - oy); o2p.normalize();
+		PVector o2p2 = new PVector(p2x - ox, p2y - oy); o2p2.normalize();
+		return (atan2(o2p2.y, o2p2.x) - atan2(o2p.y, o2p.x));
 	}
 }
