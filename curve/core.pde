@@ -2,16 +2,18 @@
  * grabbable Vector
  */
 class Gctr extends PVector {
+	float prvX, prvY;
 	float _rd = 10;
 	boolean _grbd = false; // grabbed?
 
 	Gctr(float x, float y) {
 		super(x, y);
+		prvX = this.x; prvY = this.y;
 	}
 
 	// =grab
 	void grb() {
-		if (dist(super.x, super.y, mouseX, mouseY) < _rd) {
+		if (dist(this.x, this.y, mouseX, mouseY) < _rd) {
 			_grbd = true;
 		}
 	}
@@ -25,17 +27,14 @@ class Gctr extends PVector {
 		return _grbd;
 	}
 
-	// =update
-	// return an array of previous & current points.
-	// i.e. {prev point x, prev point y, curr point x, curr point y}
-	PVector upd() {
-		float[] prNcr;
+	// = move to the mouse position
+	boolean upd() {
 		if (_grbd) {
-			prNcr = {super.x, super.y, mouseX, mouseY};
-			super.x = mouseX;
-			super.y = mouseY;
+			prvX = this.x; prvY = this.y;
+			this.x = mouseX; this.y = mouseY;
+			return true;
 		}
-		return prNcr;
+		return false;
 	}
 }
 
@@ -61,31 +60,29 @@ class GbzrSet extends Gctr {
 	}
 	// =update
 	void upd() {
-		float[] prNcr4a = super.upd();
-		if (prNcr4a != null) {
-			_c1.x += (prNcr4a[2] - prNcr4a[0]); _c1.y += (prNcr4a[3] - prNcr4a[1]);
-			_c2.x += (prNcr4a[2] - prNcr4a[0]); _c2.y += (prNcr4a[3] - prNcr4a[1]);
+		if (super.upd()) {
+			_c1.x += (this.x - prvX); _c1.y += (this.y - prvY);
+			_c2.x += (this.x - prvX); _c2.y += (this.y - prvY);
 		}
-
-		float[] prNcr4c1 = _c1.upd();
-		if (prNcr4c1 != null) {
-			float mv_rd = Utl.ang(super.x, super.y, prNcr4c1[0], prNcr4c1[1], prNcr4c1[2], prNcr4c1[3]);
-			
-			PVector c2_a = PVector.sub(new PVector(_c2.x, _c2.y), new PVector(this.x, this.y));
-			float leng = mag(c2_a.x, c2_a.y);
-			float rd4c2 = atan2(c2_a.y, c2_a.x);
-			PVector mv_v = new PVector(leng * cos(rd4c2 + mv_rd), leng * sin(rd4c2 + mv_rd));
-			_c2.x = this.x + mv_v.x; _c2.y = this.y + mv_v.y;
+		if (_c1.upd()) {
+			float mvA = Utl.ang((_c1.prvX - this.x), (_c1.prvY - this.y), (_c1.x - this.x), (_c1.y - this.y));
+			PVector mvV = Utl.mv((_c2.x - this.x), (_c2.y - this.y), mvA);
+			_c2.x = this.x + mvV.x; _c2.y = this.y + mvV.y;
 		}
-
-		float[] prNcr4c2 = _c2.upd();
+		_c2.upd();
 	}
 }
 static class Utl {
-	// = get the angle in radians between the line of origin to point1 and the line of origin to point2
-	static float ang(float ox, float oy, float px, float py, float p2x, float p2y) {
-		PVector o2p = new PVector(px - ox, py - oy); o2p.normalize();
-		PVector o2p2 = new PVector(p2x - ox, p2y - oy); o2p2.normalize();
-		return (atan2(o2p2.y, o2p2.x) - atan2(o2p.y, o2p.x));
+	// = get the angle in radians between point1 and point2
+	static float ang(float px, float py, float p2x, float p2y) {
+		PVector p1 = new PVector(px, py); p1.normalize();
+		PVector p2 = new PVector(p2x, p2y); p2.normalize();
+		return (atan2(p2.y, p2.x) - atan2(p1.y, p1.x));
+	}
+	// = get the point in Vector that moved by specified angle
+	static PVector mv(float x, float y, float ang) {
+		float lng = mag(x, y);
+		float oAng = atan2(y, x); // orginal angle
+		return new PVector(lng * cos(oAng + ang), lng * sin(oAng + ang));
 	}
 }
