@@ -1,9 +1,9 @@
 /**
  * grabbable Vector
  */
-class Gctr extends PVector{
-	float prvX, prvY;
-	float _rd = 5;
+ class Gctr extends PVector{
+ 	float prvX, prvY;
+ 	float _rd = 5;
 	boolean _grbd = false; // grabbed?
 
 	Gctr(float x, float y){
@@ -122,5 +122,14 @@ static class Utl{
 		float lng = mag(x, y);
 		float oAng = atan2(y, x); // orginal angle
 		return new float[]{lng * cos(oAng + ang), lng * sin(oAng + ang)};
+	}
+	// = get the projected point of a specified point on the base line(vector).
+	static float[] prj(float bx, float by, float px, float py){
+		float ag = Utl.ang(bx, by, px, py);
+		float ol = mag(px, py);
+		float al = ol * cos(ag);
+		PVector bp = new PVector(bx, by); bp.normalize();
+		bp.mult(al);
+		return new float[]{bp.x, bp.y};
 	}
 }

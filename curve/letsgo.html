@@ -4,14 +4,28 @@
 	<title>curve</title>
 </head>
 <body>
-	<canvas id="another-canvas" data-processing-sources="legme.pde core.pde" resize></canvas>
+	<canvas id="another-canvas" data-processing-sources="legme2.pde core.pde" resize></canvas>
 <!--
 	<canvas id="another-canvas" data-processing-sources="stickme.pde core.pde" resize></canvas>
 	<canvas id="another-canvas" data-processing-sources="curveme.pde core.pde" resize></canvas>
 -->
 
-<!-- <script src="//cdnjs.cloudflare.com/ajax/libs/processing.js/1.4.1/processing.min.js"></script> -->
 <script src="../processing-1.4.1.js"></script>
-<!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script> -->
+<!--
+<div id="psrc"><pre></pre></div>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript">
+$(function(){
+	$.ajax({
+		url: 'core.pde',
+		type: 'get',
+	}).done(function(data){
+		$('#psrc pre').html(Processing.compile(data).sourceCode);
+	}).fail(function(data){
+		alert('error');
+	});
+});
+</script>
+-->
 </body>
 </html>
