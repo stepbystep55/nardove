@@ -126,15 +126,6 @@ static class Utl{
 		return new float[]{pMag * cos(oAng + ang), pMag * sin(oAng + ang)};
 	}
 	// = project the point on the base line(vector composed by the origin point &  the base point).
-	static float[] prj(float bx, float by, float px, float py){
-		float agl = Utl.ang(bx, by, px, py); // angle between the base point & the target point
-		float oMag = Math.sqrt(px * px + py * py); // original magnitude of the target point
-		float aMag = oMag * Math.cos(agl); // projected magnitude
-		var bMag = Math.sqrt(bx * bx + by * by); // magnitude of the base point
-		var nbx = bx / bMag; var nby = by / bMag; // normalized
-		return new float[]{nbx * aMag, nby * aMag};
-	}
-	// = project the point on the base line(vector composed by the origin point &  the base point).
 	static float[] prj2(float ox, float oy, float bx, float by, float px, float py){
 		var bv = new float[]{bx - ox, by - oy};
 		var pv = new float[]{px - ox, py - oy};
