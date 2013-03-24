@@ -113,23 +113,36 @@ class Seesaw extends Gctr{
 static class Utl{
 	// = get the angle in radians between point1 and point2
 	static float ang(float px, float py, float p2x, float p2y){
-		PVector p1 = new PVector(px, py); p1.normalize();
-		PVector p2 = new PVector(p2x, p2y); p2.normalize();
-		return (atan2(p2.y, p2.x) - atan2(p1.y, p1.x));
+		var pMag = Math.sqrt(px * px + py * py); // magnitude of p
+		var npx = px / pMag; var npy = py / pMag; // normalized
+		pMag = Math.sqrt(p2x * p2x + p2y * p2y); // magnitude of p2
+		var np2x = p2x / pMag; var np2y = p2y / pMag; // normalized
+		return (Math.atan2(np2y, np2x) - Math.atan2(npy, npx));
 	}
 	// = get the point in Vector that moved by specified angle
 	static float[] mv(float x, float y, float ang){
-		float lng = mag(x, y);
-		float oAng = atan2(y, x); // orginal angle
-		return new float[]{lng * cos(oAng + ang), lng * sin(oAng + ang)};
+		var pMag = Math.sqrt(x * x + y * y); // magnitude of p
+		var oAng = Math.atan2(y, x); // orginal angle
+		return new float[]{pMag * cos(oAng + ang), pMag * sin(oAng + ang)};
 	}
-	// = get the projected point of a specified point on the base line(vector).
+	// = project the point on the base line(vector composed by the origin point &  the base point).
 	static float[] prj(float bx, float by, float px, float py){
-		float ag = Utl.ang(bx, by, px, py);
-		float ol = mag(px, py);
-		float al = ol * cos(ag);
-		PVector bp = new PVector(bx, by); bp.normalize();
-		bp.mult(al);
-		return new float[]{bp.x, bp.y};
+		float agl = Utl.ang(bx, by, px, py); // angle between the base point & the target point
+		float oMag = Math.sqrt(px * px + py * py); // original magnitude of the target point
+		float aMag = oMag * Math.cos(agl); // projected magnitude
+		var bMag = Math.sqrt(bx * bx + by * by); // magnitude of the base point
+		var nbx = bx / bMag; var nby = by / bMag; // normalized
+		return new float[]{nbx * aMag, nby * aMag};
+	}
+	// = project the point on the base line(vector composed by the origin point &  the base point).
+	static float[] prj2(float ox, float oy, float bx, float by, float px, float py){
+		var bv = new float[]{bx - ox, by - oy};
+		var pv = new float[]{px - ox, py - oy};
+		var agl = Utl.ang(bv[0], bv[1], pv[0], pv[1]); // angle between the base point & the target point
+		var oMag = Math.sqrt(pv[0] * pv[0] + pv[1] * pv[1]); // original magnitude of the target point
+		var aMag = oMag * Math.cos(agl); // projected magnitude
+		var bMag = Math.sqrt(bv[0] * bv[0] + bv[1] * bv[1]); // magnitude of the base point
+		var nbx = bv[0] / bMag; var nby = bv[1] / bMag; // normalized
+		return new float[]{nbx * aMag, nby * aMag};
 	}
 }

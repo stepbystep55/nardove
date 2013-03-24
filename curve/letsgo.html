@@ -4,20 +4,26 @@
 	<title>curve</title>
 </head>
 <body>
-	<canvas id="another-canvas" data-processing-sources="legme2.pde core.pde" resize></canvas>
+	<canvas id="canvas1" data-processing-sources="legme2.pde core.pde" resize></canvas>
+	<canvas id="canvas2" resize></canvas>
 <!--
-	<canvas id="another-canvas" data-processing-sources="stickme.pde core.pde" resize></canvas>
 	<canvas id="another-canvas" data-processing-sources="curveme.pde core.pde" resize></canvas>
 -->
 
 <script src="../processing-1.4.1.js"></script>
-<!--
 <div id="psrc"><pre></pre></div>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script type="text/javascript">
+function taco($p){
+	var pv = new $p.PVector(10, 10);
+	console.log(pv.x);
+}
 $(function(){
+	var cvs = document.getElementById("canvas2");
+	var p = new Processing(cvs, taco);
 	$.ajax({
-		url: 'core.pde',
+		//url: 'core.pde',
+		url: 'legme2.pde',
 		type: 'get',
 	}).done(function(data){
 		$('#psrc pre').html(Processing.compile(data).sourceCode);
@@ -26,6 +32,7 @@ $(function(){
 	});
 });
 </script>
+<!--
 -->
 </body>
 </html>
