@@ -10,7 +10,7 @@
 	<canvas id="another-canvas" data-processing-sources="curveme.pde core.pde" resize></canvas>
 -->
 
-<script src="../processing-1.4.1.js"></script>
+<script src="../lib/processing-1.4.1.js"></script>
 <div id="psrc"><pre></pre></div>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script type="text/javascript">
@@ -22,8 +22,8 @@ $(function(){
 	var cvs = document.getElementById("canvas2");
 	var p = new Processing(cvs, taco);
 	$.ajax({
-		//url: 'core.pde',
-		url: 'legme2.pde',
+		url: 'core.pde',
+		//url: 'legme2.pde',
 		type: 'get',
 	}).done(function(data){
 		$('#psrc pre').html(Processing.compile(data).sourceCode);
