@@ -7,7 +7,7 @@ require.config({
         */
         'jquery': '//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min'
         ,'processing': '../lib/processing-1.4.1.min'
-        ,'pcnvs': 'pcnvs'
+        ,'pvs': 'pvs'
     },
     // shimオプションの設定。モジュール間の依存関係を定義します。
     shim: {

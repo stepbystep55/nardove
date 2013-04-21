@@ -1,26 +1,27 @@
-define(['pcnvs', 'utl'], function(Pcnvs, Utl){
+define(['pvs', 'utl'], function(Pvs, Utl){
 	'use strict';
 
 	var Proc = function(){
 
 		this.init = function(){
-			Pcnvs.pjs.setup = function(){
-				Pcnvs.pjs.size(500, 500);
-				Pcnvs.pjs.frameRate(10);
-				Pcnvs.pjs.background(100);
-				Pcnvs.pjs.stroke(255);
-				Pcnvs.pjs.ellipse(50, 50, 25, 25);
-				var gctr = new Utl.Gctr(100, 100);
-				console.log('gx='+gctr.x);
-				gctr.normalize();
-				console.log('gx='+gctr.x);
-				gctr.hoge();
-				var ag = Utl.Trg.ang(100, 100, 200, 100);
-				console.log(ag);
+			var gctr = new Utl.Gctr(150,150);
+			Pvs.pjs.setup = function(){
+				Pvs.pjs.size(500, 500);
+				Pvs.pjs.frameRate(10);
+				console.log(gctr.prvX);
 			};
-			Pcnvs.pjs.draw = function(){
+			Pvs.pjs.draw = function(){
+				Pvs.pjs.background(200);
+				gctr.upd();
+				gctr.shw();
 			};
-			Pcnvs.pjs.setup();
+			Pvs.pjs.mousePressed = function(){
+				gctr.grb();
+			};
+			Pvs.pjs.mouseReleased = function(){
+				gctr.rls();
+			};
+			Pvs.pjs.setup();
 		};
 	};
 	return {
