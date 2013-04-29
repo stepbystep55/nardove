@@ -6,7 +6,7 @@
 <body>
 	<canvas id="cvs" resize></canvas>
 	<!--script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script-->
-	<script src="../lib/jquery-1.9.0.min.js"></script>
+	<script src="../lib/jquery-1.9.0.min.js">:</script>
 	<script src="../lib/processing-1.4.1.min.js"></script>
 	<script src="main.js"></script>
 	<script>
@@ -22,49 +22,67 @@ $(function(){
 	var pjs = new Processing($('#cvs')[0]);
 
 	var bubble = {
-		init : function(x, y){
-			if(this.running) return;
+		init : function(x, y, incidence){
+			//if(this.running) return;
 
-			this.velocity = new pjs.PVector(0,0);
-			this.point = new pjs.PVector(x,y);
-			this.radius = 100;
 			this.running = true;
-			this.count = 0;
-			this.color = [Math.floor(Math.random()*256),Math.floor(Math.random()*256),Math.floor(Math.random()*256)];
-			var srcX = Math.random();
-			var srcY = Math.random();
-			this.direction = new pjs.PVector((srcX < 0.5 ? -1 : 1) * srcX * 10, (srcY < 0.5 ? -1 : 1) * srcY * 10);
+			this.point = new pjs.PVector(x,y);
+			this.initiaRadius = Math.random() * 100;
+			this.radius = this.initiaRadius;
+			this.color = [(Math.random() * 256),(Math.random() * 256),(Math.random() * 256)];
+			this.updatedCount = 0;
+
+			this.nextIncidence = Math.round(Math.random() * incidence);
+			this.eruptionTime = Math.round(Math.random() * 30);
+			this.children = new Array();
+			for(var i = 0; i < this.nextIncidence; i++){
+				this.children[i] = Object.create(bubble);
+				var childX = pjs.width * Math.random();
+				var childY = pjs.height * Math.random();
+				this.children[i].init(childX, childY, this.nextIncidence);
+				this.children[i].running = false;
+			}
+			//console.log('nextIncidence='+this.nextIncidence+',eruptionTime='+this.eruptionTime+',children.leng='+this.children.length);
 		}
 		, update : function(){
 			if(!this.running) return;
 
-			if(this.radius == 0) this.running = false;
-			++this.count;
-			//this.radius = Math.floor(this.radius - Math.log(100 * this.count));
-			this.radius = Math.floor(this.radius - Math.sqrt(this.radius / (this.count * this.count)));
-			this.point.add(this.direction);
+			++this.updatedCount;
+			this.radius = this.initiaRadius - (Math.pow(this.updatedCount, 2) / this.initiaRadius);
+
+			if(this.updatedCount > this.eruptionTime) for(var i = 0; i < this.children.length; i++) this.children[i].running = true;
+
+			for(var i = 0; i < this.children.length; i++) this.children[i].update();
+
+			if(this.radius < 1){
+				for(var i = 0; i < this.children.length; i++){
+					if(this.children[i].running) return;
+				}
+				this.running = false;
+			}
 		}
 		, display : function(){
 			if(!this.running) return;
 
-			pjs.noStroke();
+			pjs.stroke(255);
 			pjs.fill(this.color[0],this.color[1],this.color[2]);
 			pjs.ellipse(this.point.x, this.point.y, this.radius, this.radius);
+			for(var i = 0; i < this.children.length; i++) this.children[i].display();
 		}
 	};
 
 	var init = function(){
 		pjs.setup = function(){
-			pjs.size(500, 500);
+			pjs.size(window.innerWidth, window.innerHeight);
 			pjs.frameRate(10);
 		};
 		pjs.draw = function(){
-			pjs.background(64);
+			pjs.background(173,216,230);
 			bubble.display();
 			bubble.update();
 		};
 		pjs.mousePressed = function(){
-			bubble.init(pjs.mouseX, pjs.mouseY);
+			if(!bubble.running) bubble.init(pjs.mouseX, pjs.mouseY, 10);
 		};
 		pjs.mouseReleased = function(){
 		};
