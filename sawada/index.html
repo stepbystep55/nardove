@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+	<canvas id="cvs" resize></canvas>
+	<!--script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script-->
+	<script src="../lib/jquery-1.9.0.min.js"></script>
+	<script src="../lib/processing-1.4.1.min.js"></script>
+	<script src="main.js"></script>
+	<script>
+$(function(){
+	if (typeof Object.create !== 'function') {
+    	Object.create = function (o) {
+	        function F() {}
+	        F.prototype = o;
+	        return new F();
+    	};
+	}
+
+	var pjs = new Processing($('#cvs')[0]);
+
+	var bubble = {
+		init : function(x, y){
+			if(this.running) return;
+
+			this.velocity = new pjs.PVector(0,0);
+			this.point = new pjs.PVector(x,y);
+			this.radius = 100;
+			this.running = true;
+			this.count = 0;
+			this.color = [Math.floor(Math.random()*256),Math.floor(Math.random()*256),Math.floor(Math.random()*256)];
+			var srcX = Math.random();
+			var srcY = Math.random();
+			this.direction = new pjs.PVector((srcX < 0.5 ? -1 : 1) * srcX * 10, (srcY < 0.5 ? -1 : 1) * srcY * 10);
+		}
+		, update : function(){
+			if(!this.running) return;
+
+			if(this.radius == 0) this.running = false;
+			++this.count;
+			//this.radius = Math.floor(this.radius - Math.log(100 * this.count));
+			this.radius = Math.floor(this.radius - Math.sqrt(this.radius / (this.count * this.count)));
+			this.point.add(this.direction);
+		}
+		, display : function(){
+			if(!this.running) return;
+
+			pjs.noStroke();
+			pjs.fill(this.color[0],this.color[1],this.color[2]);
+			pjs.ellipse(this.point.x, this.point.y, this.radius, this.radius);
+		}
+	};
+
+	var init = function(){
+		pjs.setup = function(){
+			pjs.size(500, 500);
+			pjs.frameRate(10);
+		};
+		pjs.draw = function(){
+			pjs.background(64);
+			bubble.display();
+			bubble.update();
+		};
+		pjs.mousePressed = function(){
+			bubble.init(pjs.mouseX, pjs.mouseY);
+		};
+		pjs.mouseReleased = function(){
+		};
+		pjs.setup();
+	};
+	init();
+});
+	</script>
+</body>
+</html>
