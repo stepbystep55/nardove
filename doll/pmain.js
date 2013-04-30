@@ -4,7 +4,8 @@ define(['pvs', 'utl'], function(Pvs, Utl){
 	var Proc = function(){
 
 		this.init = function(){
-			var gctr = new Utl.Gctr(150,150);
+			//var gctr = new Utl.Gctr(150,150);
+			var gctr = new Utl.Gctr();
 			Pvs.pjs.setup = function(){
 				Pvs.pjs.size(500, 500);
 				Pvs.pjs.frameRate(10);

@@ -1,38 +1,44 @@
 define(['pvs'], function(Pvs){
 	'use strict';
-	var Tri = function(){};
 
-	// = get the angle in radians between point1 and point2
-	Tri.ang = function(px, py, p2x, p2y){
-		var pMag = Math.sqrt(px * px + py * py); // magnitude of p
-		var npx = px / pMag; var npy = py / pMag; // normalized
-		pMag = Math.sqrt(p2x * p2x + p2y * p2y); // magnitude of p2
-		var np2x = p2x / pMag; var np2y = p2y / pMag; // normalized
-		return (Math.atan2(np2y, np2x) - Math.atan2(npy, npx));
-	};
-	// = get the point in Vector that moved by specified angle
-	Tri.mv = function(x, y, ang){
-		var pMag = Math.sqrt(x * x + y * y); // magnitude of p
-		var oAng = Math.atan2(y, x); // orginal angle
-		return [pMag * cos(oAng + ang), pMag * sin(oAng + ang)];
-	};
-	// = project the point on the base line(vector composed by the origin point &  the base point).
-	Tri.prj2 = function(ox, oy, bx, by, px, py){
-		var bv = [bx - ox, by - oy];
-		var pv = [px - ox, py - oy];
-		var agl = Tri.ang(bv[0], bv[1], pv[0], pv[1]); // angle between the base point & the target point
-		var oMag = Math.sqrt(pv[0] * pv[0] + pv[1] * pv[1]); // original magnitude of the target point
-		var aMag = oMag * Math.cos(agl); // projected magnitude
-		var bMag = Math.sqrt(bv[0] * bv[0] + bv[1] * bv[1]); // magnitude of the base point
-		var nbx = bv[0] / bMag; var nby = bv[1] / bMag; // normalized
-		return [nbx * aMag, nby * aMag];
+	var Tri = function(){
+
+		// = get the angle in radians between point1 and point2
+		this.ang = function(px, py, p2x, p2y){
+			var pMag = Math.sqrt(px * px + py * py); // magnitude of p
+			var npx = px / pMag; var npy = py / pMag; // normalized
+			pMag = Math.sqrt(p2x * p2x + p2y * p2y); // magnitude of p2
+			var np2x = p2x / pMag; var np2y = p2y / pMag; // normalized
+			return (Math.atan2(np2y, np2x) - Math.atan2(npy, npx));
+		};
+
+		// = get the point in Vector that moved by specified angle
+		this.mv = function(x, y, ang){
+			var pMag = Math.sqrt(x * x + y * y); // magnitude of p
+			var oAng = Math.atan2(y, x); // orginal angle
+			return [pMag * cos(oAng + ang), pMag * sin(oAng + ang)];
+		};
+			
+		// = project the point on the base line(vector composed by the origin point &  the base point).
+		this.prj2 = function(ox, oy, bx, by, px, py){
+			var bv = [bx - ox, by - oy];
+			var pv = [px - ox, py - oy];
+			var agl = Tri.ang(bv[0], bv[1], pv[0], pv[1]); // angle between the base point & the target point
+			var oMag = Math.sqrt(pv[0] * pv[0] + pv[1] * pv[1]); // original magnitude of the target point
+			var aMag = oMag * Math.cos(agl); // projected magnitude
+			var bMag = Math.sqrt(bv[0] * bv[0] + bv[1] * bv[1]); // magnitude of the base point
+			var nbx = bv[0] / bMag; var nby = bv[1] / bMag; // normalized
+			return [nbx * aMag, nby * aMag];
+		};
 	};
 
 	var Gctr = function(){
+		if(arguments.length < 2) throw 'Cant construct Gctr.';
 		Pvs.pjs.PVector.apply(this, arguments);
-	 	var _prvX = arguments[0], _prvY = arguments[1]; // the point previously situated
-	 	var _rd4g = 5; // radius for grab
+	 	this._prvX = arguments[0], this._prvY = arguments[1]; // the point previously situated
+	 	var _rd4g = (arguments.length == 3) ? arguments[2] : 5; // radius for grab
 		var _grbd = false; // grabbed?
+
 		// =grab
 		this.grb = function(){
 			var dx = this.x - Pvs.pjs.mouseX;
@@ -41,14 +47,18 @@ define(['pvs'], function(Pvs){
 				_grbd = true;
 			}
 		};
+
 		// =release
 		this.rls = function(){
 			_grbd = false;
 		};
+
 		// =grabbed?
 		this.grbd = function(){
 			return _grbd;
 		};
+
+		// =update the point position of this vector
 		this.upd = function(mx, my){
 			if(_grbd){
 				if(arguments.length===0){
@@ -62,6 +72,8 @@ define(['pvs'], function(Pvs){
 			}
 			return false;
 		};
+
+		// =show the point information of this vector
 		this.shw = function(){
 			Pvs.pjs.fill(0,0,0);
 			Pvs.pjs.textSize(8);
