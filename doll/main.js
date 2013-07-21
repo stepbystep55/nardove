@@ -31,26 +31,30 @@ require.config({
 define(['pjs', 'pjsx'], function(pjs, pjsx){
 	'use strict';
 
-	var init = function(){
+	(function(){
 		var g1;
 		pjs.setup = function(){
 			pjs.size(500, 500);
 			pjs.frameRate(10);
 
-			pjs.background(200);
 			g1 = new pjsx.GVector(100, 200);
+		};
+
+		pjs.draw = function(){
+			pjs.background(200);
+
+			g1.mvTo(pjs.mouseX, pjs.mouseY);
 			pjs.ellipse(g1.x, g1.y, 100, 100);
 		};
-		pjs.draw = function(){
-			console.log(g1.grbd);
-		};
+
 		pjs.mousePressed = function(){
 			g1.grb(pjs.mouseX, pjs.mouseY);
 		};
+
 		pjs.mouseReleased = function(){
 			g1.rls();
 		};
+
 		pjs.setup();
-	};
-	init();
+	}());
 });
