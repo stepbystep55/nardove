@@ -1,11 +1,14 @@
-define(['pjs'], function(pjs){
+define(function(){
 	'use strict';
 
 	// trigonometric util
 	var tri = {
 
 		// = get the angle in radians between point1 and point2
-		ang : function(px, py, p2x, p2y){
+		dist: function(ax, ay, bx, by){
+			return Math.sqrt(Math.pow((ax - bx), 2) + Math.pow((ay - by), 2));
+		}
+		, ang: function(px, py, p2x, p2y){
 			var pMag = Math.sqrt(px * px + py * py); // magnitude of p
 			var npx = px / pMag; var npy = py / pMag; // normalized
 			pMag = Math.sqrt(p2x * p2x + p2y * p2y); // magnitude of p2
@@ -13,15 +16,15 @@ define(['pjs'], function(pjs){
 			return (Math.atan2(np2y, np2x) - Math.atan2(npy, npx));
 		}
 
-		// = get the point in Vector that moved by specified angle
-		, mv : function(x, y, ang){
+		// = get the point moved by specified angle
+		, mv: function(x, y, ang){
 			var pMag = Math.sqrt(x * x + y * y); // magnitude of p
 			var oAng = Math.atan2(y, x); // orginal angle
 			return [pMag * cos(oAng + ang), pMag * sin(oAng + ang)];
 		}
 			
 		// = project the point on the base line(vector composed by the origin point &  the base point).
-		, prj : function(ox, oy, bx, by, px, py){
+		, prj: function(ox, oy, bx, by, px, py){
 			var bv = [bx - ox, by - oy];
 			var pv = [px - ox, py - oy];
 			var agl = Tri.ang(bv[0], bv[1], pv[0], pv[1]); // angle between the base point & the target point
