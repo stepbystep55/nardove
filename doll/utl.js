@@ -20,7 +20,7 @@ define(function(){
 		, mv: function(x, y, ang){
 			var pMag = Math.sqrt(x * x + y * y); // magnitude of p
 			var oAng = Math.atan2(y, x); // orginal angle
-			return [pMag * cos(oAng + ang), pMag * sin(oAng + ang)];
+			return [pMag * Math.cos(oAng + ang), pMag * Math.sin(oAng + ang)];
 		}
 			
 		// = project the point on the base line(vector composed by the origin point &  the base point).
