@@ -1,6 +1,5 @@
 require.config({
 	urlArgs: 'v001'
-    //urlArgs: 'bust=v1'
 	, enforceDefine: true
 	, paths: {
 		'jquery': [
@@ -19,7 +18,6 @@ require.config({
 			, '../lib/processing-1.4.1-api.min'
 		]
 	}
-	// shimオプションの設定。モジュール間の依存関係を定義します。
 	, shim: {
 		'underscore': {
 			exports: '_'
