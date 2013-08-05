@@ -5,42 +5,43 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 	var GVector = function(){
 		pjs.PVector.apply(this, arguments);
 
-		var self = this;
-
 		this.preX = arguments[0] || 0;
 		this.preY = arguments[1] || 0;
 		this.rd = 10; // radious where you can grab this
 		this.grbd = false; // grabed or not
 
 		this.grb = function(x, y){
-			if(utl.tri.dist(self.x, self.y, x, y) < self.rd){
-				self.grbd = true;
+			if(utl.tri.dist(this.x, this.y, x, y) < this.rd){
+				this.grbd = true;
 			}
 		};
 		this.rls = function(){
-			self.grbd = false;
+			this.grbd = false;
 		};
 
 		this.callbacks = [];
 		this.putCallbacks = function(methodName, obj){
-			self.callbacks.push({methodName: methodName, obj: obj});
+			this.callbacks.push({methodName: methodName, obj: obj});
 		};
+		// options:
+		//   forced - true if not mind grabed or not
+		//   nocallback - true if no callback
 		this.mv = function(x, y, options){
 			if(!options) options = {};
-			if(self.grbd || options.forced){
-				self.preX = self.x; self.preY = self.y;
-				self.x += x; self.y += y;
+			if(this.grbd || options.forced){
+				this.preX = this.x; this.preY = this.y;
+				this.x += x; this.y += y;
 
 				if(!options.nocallback){
-					for(var i = 0; i < self.callbacks.length; i++){
-						var callback = self.callbacks[i];
-						callback.obj[callback.methodName].call(callback.obj, self);
+					for(var i = 0; i < this.callbacks.length; i++){
+						var callback = this.callbacks[i];
+						callback.obj[callback.methodName].call(callback.obj, this);
 					}
 				}
 			}
 		};
 		this.mvTo = function(x, y, options){
-			return self.mv((x - self.x), (y - self.y), options);
+			return this.mv((x - this.x), (y - this.y), options);
 		};
 	};
 	GVector.prototype = Object.create(pjs.PVector.prototype);
@@ -51,45 +52,43 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 
 		if(_.isUndefined(flc) || _.isUndefined(e1) || _.isUndefined(e2)) throw 'need three args.';
 
-		var self = this;
-
 		this.fulcrum = flc; this.fulcrum.putCallbacks('upd', this);
 		this.end1 = e1; this.end1.putCallbacks('upd', this);
 		this.end2 = e2; this.end2.putCallbacks('upd', this);
 
 		this.upd = function(caller){
-			if(caller === self.fulcrum) {
-				self.end1.mv(
-					(self.fulcrum.x - self.fulcrum.preX), (self.fulcrum.y - self.fulcrum.preY)
+			if(caller === this.fulcrum) {
+				this.end1.mv(
+					(this.fulcrum.x - this.fulcrum.preX), (this.fulcrum.y - this.fulcrum.preY)
 					, {forced: true, nocallback: true});
-				self.end2.mv(
-					(self.fulcrum.x - self.fulcrum.preX), (self.fulcrum.y - self.fulcrum.preY)
-					, {forced: true, nocallback: true});
-			}
-			if(caller === self.end1) {
-				// calculate moved angle
-				var angle = utl.tri.ang(
-					(self.end1.preX - self.fulcrum.x), (self.end1.preY - self.fulcrum.y)
-					, (self.end1.x - self.fulcrum.x), (self.end1.y - self.fulcrum.y)
-				);
-				// calculate moved vector
-				var mvd = utl.tri.mv((self.end2.x - self.fulcrum.x), (self.end2.y - self.fulcrum.y), angle);
-
-				self.end2.mvTo(
-					self.fulcrum.x + mvd.x, self.fulcrum.y + mvd.y
+				this.end2.mv(
+					(this.fulcrum.x - this.fulcrum.preX), (this.fulcrum.y - this.fulcrum.preY)
 					, {forced: true, nocallback: true});
 			}
-			if(caller === self.end2) {
+			if(caller === this.end1){
 				// calculate moved angle
 				var angle = utl.tri.ang(
-					(self.end2.preX - self.fulcrum.x), (self.end2.preY - self.fulcrum.y)
-					, (self.end2.x - self.fulcrum.x), (self.end2.y - self.fulcrum.y)
+					(this.end1.preX - this.fulcrum.x), (this.end1.preY - this.fulcrum.y)
+					, (this.end1.x - this.fulcrum.x), (this.end1.y - this.fulcrum.y)
 				);
 				// calculate moved vector
-				var mvd = utl.tri.mv((self.end1.x - self.fulcrum.x), (self.end1.y - self.fulcrum.y), angle);
+				var mvd = utl.tri.mv((this.end2.x - this.fulcrum.x), (this.end2.y - this.fulcrum.y), angle);
 
-				self.end1.mvTo(
-					self.fulcrum.x + mvd.x, self.fulcrum.y + mvd.y
+				this.end2.mvTo(
+					this.fulcrum.x + mvd.x, this.fulcrum.y + mvd.y
+					, {forced: true, nocallback: true});
+			}
+			if(caller === this.end2){
+				// calculate moved angle
+				var angle = utl.tri.ang(
+					(this.end2.preX - this.fulcrum.x), (this.end2.preY - this.fulcrum.y)
+					, (this.end2.x - this.fulcrum.x), (this.end2.y - this.fulcrum.y)
+				);
+				// calculate moved vector
+				var mvd = utl.tri.mv((this.end1.x - this.fulcrum.x), (this.end1.y - this.fulcrum.y), angle);
+
+				this.end1.mvTo(
+					this.fulcrum.x + mvd.x, this.fulcrum.y + mvd.y
 					, {forced: true, nocallback: true});
 			}
 		};
@@ -99,14 +98,12 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 	var Kendama = function(gp, bl){
 		if(_.isUndefined(gp) || _.isUndefined(bl)) throw 'need two args.';
 
-		var self = this;
-
 		this.grip = gp; this.grip.putCallbacks('upd', this);
 		this.ball = bl;
 
 		this.upd = function(caller){
-			self.ball.mv(
-				(self.grip.x - self.grip.preX), (self.grip.y - self.grip.preY)
+			this.ball.mv(
+				(this.grip.x - this.grip.preX), (this.grip.y - this.grip.preY)
 				, {forced: true, nocallback: true});
 		};
 	};
