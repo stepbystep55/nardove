@@ -3,7 +3,7 @@ define(['pjs', 'pjsx'], function(pjs, pjsx){
 
 	var app = function(){
 		var fulcrum, end1, end2, ss;
-		var ball, grip, head, bb;
+		var grip, ball, kd;
 
 		pjs.setup = function(){
 			pjs.size(500, 500);
@@ -17,8 +17,7 @@ define(['pjs', 'pjsx'], function(pjs, pjsx){
 
 			ball = new pjsx.GVector(350, 300);
 			grip = new pjsx.GVector(300, 300);
-			head = new pjsx.GVector(450, 350);
-			bb = new pjsx.BallBat(ball, grip, head);
+			kd = new pjsx.Kendama(grip, ball);
 		};
 
 		pjs.draw = function(){
@@ -27,27 +26,31 @@ define(['pjs', 'pjsx'], function(pjs, pjsx){
 			fulcrum.mvTo(pjs.mouseX, pjs.mouseY);
 			end1.mvTo(pjs.mouseX, pjs.mouseY);
 			end2.mvTo(pjs.mouseX, pjs.mouseY);
+			grip.mvTo(pjs.mouseX, pjs.mouseY);
+			ball.mvTo(pjs.mouseX, pjs.mouseY);
 
 			pjs.ellipse(ss.fulcrum.x, ss.fulcrum.y, 30, 30);
 			pjs.ellipse(ss.end1.x, ss.end1.y, 30, 30);
-
-			pjs.ellipse(bb.ball.x, bb.ball.y, 5, 5);
-			pjs.ellipse(bb.grip.x, bb.grip.y, 10, 10);
-			pjs.ellipse(bb.head.x, bb.head.y, 10, 10);
-			pjs.ellipse(bb.ballOnBat.x, bb.ballOnBat.y, 10, 10);
 			pjs.ellipse(ss.end2.x, ss.end2.y, 30, 30);
+
+			pjs.ellipse(kd.grip.x, kd.grip.y, 10, 10);
+			pjs.ellipse(kd.ball.x, kd.ball.y, 5, 5);
 		};
 
 		pjs.mousePressed = function(){
 			fulcrum.grb(pjs.mouseX, pjs.mouseY);
 			end1.grb(pjs.mouseX, pjs.mouseY);
 			end2.grb(pjs.mouseX, pjs.mouseY);
+			grip.grb(pjs.mouseX, pjs.mouseY);
+			ball.grb(pjs.mouseX, pjs.mouseY);
 		};
 
 		pjs.mouseReleased = function(){
 			fulcrum.rls();
 			end1.rls();
 			end2.rls();
+			grip.rls();
+			ball.rls();
 		};
 
 		pjs.setup();

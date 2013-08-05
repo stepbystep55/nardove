@@ -95,42 +95,25 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 		};
 	};
 
-	var BallBat = function(bl, gp, hd){
-		if(_.isUndefined(bl) || _.isUndefined(gp) || _.isUndefined(hd)) throw 'need three args.';
+	// A pair of points that one's movement affect another but another can move freely.
+	var Kendama = function(gp, bl){
+		if(_.isUndefined(gp) || _.isUndefined(bl)) throw 'need two args.';
 
 		var self = this;
 
-		this.ball = bl; this.ball.putCallbacks('upd', this);
 		this.grip = gp; this.grip.putCallbacks('upd', this);
-		this.head = hd; this.head.putCallbacks('upd', this);
+		this.ball = bl;
 
-		this.ballOnBat = null;
-
-		this.prjBallOnBat = function(){
-			var angle = utl.tri.ang(
-				(self.ball.preX - self.grip.x), (self.ball.preY - self.grip.y)
-				, (self.head.x - self.grip.x), (self.head.y - self.grip.y)
-			);
-			var dist = self.ball.dist(self.grip) * Math.cos(angle);
-			var fromGrip =  utl.tri.sub(
-					self.head.x, self.head.y
-					, self.grip.x, self.grip.y
-					, true
-				);
-			console.log(fromGrip.x + ', ' + fromGrip.y);
-			self.ballOnBat = new GVector((self.grip.x + fromGrip.x) * dist, (self.grip.y + fromGrip.y) * dist);
-		};
-		this.prjBallOnBat();
 		this.upd = function(caller){
-			if(caller === ss.ball) {
-			}
+			self.ball.mv(
+				(self.grip.x - self.grip.preX), (self.grip.y - self.grip.preY)
+				, {forced: true, nocallback: true});
 		};
-
 	};
 
 	return {
 		GVector: GVector
 		, Seesaw: Seesaw
-		, BallBat: BallBat 
+		, Kendama: Kendama
 	};
 });
