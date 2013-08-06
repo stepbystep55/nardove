@@ -1,6 +1,15 @@
-define(['pjs', 'pjsx'], function(pjs, pjsx){
+define(['pjs','pjsx','jquery'], function(pjs, pjsx, $){
 	'use strict';
 
+	var loopon = false;
+	$('#btn').click(function(){
+		loopon = !loopon;
+		if(loopon){
+			pjs.loop();
+		}else{
+			pjs.noLoop();
+		}
+	});
 	var app = function(){
 		var fulcrum, end1, end2, ss;
 		var grip, ball, kd;
@@ -10,13 +19,13 @@ define(['pjs', 'pjsx'], function(pjs, pjsx){
 			pjs.frameRate(10);
 
 			//g1 = new pjsx.GVector(100, 200);
-			fulcrum = new pjsx.GVector(200, 200);
-			end1 = new pjsx.GVector(250, 250);
-			end2 = new pjsx.GVector(160, 130);
+			fulcrum = new pjsx.newGvector(200, 200);
+			end1 = new pjsx.newGvector(250, 250);
+			end2 = new pjsx.newGvector(160, 130);
 			ss = new pjsx.Seesaw(fulcrum, end1, end2);
 
-			ball = new pjsx.GVector(350, 300);
-			grip = new pjsx.GVector(300, 300);
+			ball = new pjsx.newGvector(350, 300);
+			grip = new pjsx.newGvector(300, 300);
 			kd = new pjsx.Kendama(grip, ball);
 		};
 
@@ -26,12 +35,18 @@ define(['pjs', 'pjsx'], function(pjs, pjsx){
 			fulcrum.mvTo(pjs.mouseX, pjs.mouseY);
 			end1.mvTo(pjs.mouseX, pjs.mouseY);
 			end2.mvTo(pjs.mouseX, pjs.mouseY);
-			grip.mvTo(pjs.mouseX, pjs.mouseY);
-			ball.mvTo(pjs.mouseX, pjs.mouseY);
 
+			pjs.fill(255);
 			pjs.ellipse(ss.fulcrum.x, ss.fulcrum.y, 30, 30);
 			pjs.ellipse(ss.end1.x, ss.end1.y, 30, 30);
 			pjs.ellipse(ss.end2.x, ss.end2.y, 30, 30);
+			pjs.fill(0);
+			pjs.text("" + Math.round(ss.fulcrum.x) + "," + Math.round(ss.fulcrum.y), ss.fulcrum.x, ss.fulcrum.y);
+			pjs.text("" + Math.round(ss.end1.x) + "," + Math.round(ss.end1.y), ss.end1.x, ss.end1.y);
+			pjs.text("" + Math.round(ss.end2.x) + "," + Math.round(ss.end1.y), ss.end2.x, ss.end2.y);
+
+			grip.mvTo(pjs.mouseX, pjs.mouseY);
+			ball.mvTo(pjs.mouseX, pjs.mouseY);
 
 			pjs.ellipse(kd.grip.x, kd.grip.y, 10, 10);
 			pjs.ellipse(kd.ball.x, kd.ball.y, 5, 5);
