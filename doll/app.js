@@ -19,14 +19,14 @@ define(['pjs','pjsx','jquery'], function(pjs, pjsx, $){
 			pjs.frameRate(10);
 
 			//g1 = new pjsx.GVector(100, 200);
-			fulcrum = new pjsx.newGvector(200, 200);
-			end1 = new pjsx.newGvector(250, 250);
-			end2 = new pjsx.newGvector(160, 130);
-			ss = new pjsx.Seesaw(fulcrum, end1, end2);
+			fulcrum = new pjsx.fac.newGvector(200, 200);
+			end1 = new pjsx.fac.newGvector(250, 250);
+			end2 = new pjsx.fac.newGvector(160, 130);
+			ss = new pjsx.fac.newSeesaw(fulcrum, end1, end2);
 
-			ball = new pjsx.newGvector(350, 300);
-			grip = new pjsx.newGvector(300, 300);
-			kd = new pjsx.Kendama(grip, ball);
+			ball = new pjsx.fac.newGvector(350, 300);
+			grip = new pjsx.fac.newGvector(300, 300);
+			kd = new pjsx.fac.newKendama(grip, ball);
 		};
 
 		pjs.draw = function(){

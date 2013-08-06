@@ -1,7 +1,7 @@
 define(['underscore','utl','pjs'], function(_, utl,pjs){
 	'use strict';
 
-	// when you grab this vector, you can move this as you want.
+	// when you grab this vector, you can move this anywhere you want.
 	var gvector = {
 		name: 'anonymous'
 		, x: 0
@@ -54,22 +54,23 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			this.mv((ax - this.x), (ay - this.y), options);
 		}
 	};
-	var newGvector = function(ax, ay){
-		var clone = Object.create(gvector);
-		clone.init(ax, ay);
-		return clone;
-	};
 
 	// a point with two end points which can move around fulcrum.
-	var Seesaw = function(flc, e1, e2){
+	var seesaw = {
+		fulcrum: null // must be gvector
+		, end1: null // must be gvector
+		, end2: null // must be gvector
 
-		if(_.isUndefined(flc) || _.isUndefined(e1) || _.isUndefined(e2)) throw 'need three args.';
+		, init: function(afulcrum, aend1, aend2){
+			this.fulcrum = afulcrum;
+			this.end1 = aend1;
+			this.end2 = aend2;
+			this.fulcrum.pushCallbacks('upd', this);
+			this.end1.pushCallbacks('upd', this);
+			this.end2.pushCallbacks('upd', this);
+		}
 
-		this.fulcrum = flc; this.fulcrum.pushCallbacks('upd', this);
-		this.end1 = e1; this.end1.pushCallbacks('upd', this);
-		this.end2 = e2; this.end2.pushCallbacks('upd', this);
-
-		this.upd = function(caller){
+		, upd: function(caller){
 			if(caller === this.fulcrum) {
 				this.end1.mv(
 					(this.fulcrum.x - this.fulcrum.preX), (this.fulcrum.y - this.fulcrum.preY)
@@ -104,26 +105,48 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 					this.fulcrum.x + mvd.x, this.fulcrum.y + mvd.y
 					, {forced: true, nocallback: true});
 			}
-		};
+		}
 	};
 
 	// A pair of points that one's movement affect another but another can move freely.
-	var Kendama = function(gp, bl){
-		if(_.isUndefined(gp) || _.isUndefined(bl)) throw 'need two args.';
+	var kendama = {
+		grip: null // must be gvector
+		, ball: null // must be gvector
 
-		this.grip = gp; this.grip.pushCallbacks('upd', this);
-		this.ball = bl;
+		, init: function(agrip, aball){
+			this.grip = agrip;
+			this.ball = aball;
+			this.grip.pushCallbacks('upd', this);
+		}
 
-		this.upd = function(caller){
+		, upd: function(caller){
 			this.ball.mv(
 				(this.grip.x - this.grip.preX), (this.grip.y - this.grip.preY)
 				, {forced: true, nocallback: true});
-		};
+		}
+	};
+
+	var factory = {
+		newGvector: function(ax, ay){
+			var clone = Object.create(gvector);
+			clone.init(ax, ay);
+			return clone;
+		}
+		, newKendama: function(agp, abl){
+			if(_.isUndefined(agp) || _.isUndefined(abl)) throw 'need 2 args.';
+			var clone = Object.create(kendama);
+			clone.init(agp, abl);
+			return clone;
+		}
+		, newSeesaw: function(afc, ae1, ae2){
+			if(_.isUndefined(afc) || _.isUndefined(ae1) || _.isUndefined(ae2)) throw 'need 3 args.';
+			var clone = Object.create(seesaw);
+			clone.init(afc, ae1, ae2);
+			return clone;
+		}
 	};
 
 	return {
-		newGvector: newGvector
-		, Seesaw: Seesaw
-		, Kendama: Kendama
+		fac: factory
 	};
 });
