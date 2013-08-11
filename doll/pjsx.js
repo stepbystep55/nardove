@@ -53,6 +53,10 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 		, mvTo: function(ax, ay, options){
 			this.mv((ax - this.x), (ay - this.y), options);
 		}
+
+		, show: function(){
+			pjs.text("" + Math.round(this.x) + "," + Math.round(this.y), this.x, this.y);
+		}
 	};
 
 	// a point with two end points which can move around fulcrum.
@@ -68,6 +72,18 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			this.fulcrum.pushCallbacks('upd', this);
 			this.end1.pushCallbacks('upd', this);
 			this.end2.pushCallbacks('upd', this);
+		}
+
+		, grb: function(ax, ay){
+			//console.log(ax + '=' + ay);
+			this.fulcrum.grb(ax, ay);
+			this.end1.grb(ax, ay);
+			this.end2.grb(ax, ay);
+		}
+		, rls: function(){
+			this.fulcrum.rls();
+			this.end1.rls();
+			this.end2.rls();
 		}
 
 		, upd: function(caller){
@@ -106,6 +122,11 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 					, {forced: true, nocallback: true});
 			}
 		}
+		, show: function(){
+			this.fulcrum.show();
+			this.end1.show();
+			this.end2.show();
+		}
 	};
 
 	// A pair of points that one's movement affect another but another can move freely.
@@ -119,10 +140,49 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			this.grip.pushCallbacks('upd', this);
 		}
 
+		, grb: function(ax, ay){
+			//console.log(ax + '=' + ay);
+			this.grip.grb(ax, ay);
+			this.ball.grb(ax, ay);
+		}
+		, rls: function(ax, ay){
+			this.grip.rls();
+			this.ball.rls();
+		}
+
 		, upd: function(caller){
 			this.ball.mv(
 				(this.grip.x - this.grip.preX), (this.grip.y - this.grip.preY)
 				, {forced: true, nocallback: true});
+		}
+	};
+
+	var cube = {
+		end1: null
+		,end2: null
+		,surfaces: []
+		, init: function(e1, e2, srfs){
+			this.end1 = e1;
+			this.end2 = e2;
+			for(var i = 0; i < srfs.length; i++){
+				var ss_e1 = factory.newGvector(srfs[i].x - 30, srfs[i].y);
+				var ss_e2 = factory.newGvector(srfs[i].x + 30, srfs[i].y);
+				var ss = factory.newSeesaw(srfs[i], ss_e1, ss_e2);
+				this.surfaces.push(ss);
+				//this.surfaces.push(factory.newKendama(e1, ss));
+			}
+		}
+
+		, grb: function(ax, ay){
+			//console.log(ax + '=' + ay);
+			this.end1.grb(ax, ay);
+			this.end2.grb(ax, ay);
+			for(var i = 0; i < this.surfaces.length; i++) this.surfaces[i].grb(ax, ay);
+		}
+		, rls: function(){
+			this.end1.rls();
+			this.end2.rls();
+			for(var i = 0; i < this.surfaces.length; i++) this.surfaces[i].rls();
 		}
 	};
 
@@ -142,6 +202,11 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			if(_.isUndefined(afc) || _.isUndefined(ae1) || _.isUndefined(ae2)) throw 'need 3 args.';
 			var clone = Object.create(seesaw);
 			clone.init(afc, ae1, ae2);
+			return clone;
+		}
+		, newCube: function(ae1, ae2, asrfs){
+			var clone = Object.create(cube);
+			clone.init(ae1, ae2, asrfs);
 			return clone;
 		}
 	};
