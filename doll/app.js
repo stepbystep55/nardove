@@ -26,6 +26,8 @@ define(['pjs','pjsx','jquery'], function(pjs, pjsx, $){
 			end1 = new pjsx.fac.newGvector(250, 250);
 			end2 = new pjsx.fac.newGvector(160, 130);
 			ss = new pjsx.fac.newSeesaw(fulcrum, end1, end2);
+			/*
+			*/
 
 			/*
 			ballA = new pjsx.fac.newGvector(350, 300);
@@ -36,25 +38,19 @@ define(['pjs','pjsx','jquery'], function(pjs, pjsx, $){
 			gripB = new pjsx.fac.newGvector(100, 100);
 			kdB = new pjsx.fac.newKendama(gripB, ballB);
 			*/
-			/*
 			cubeend1 = new pjsx.fac.newGvector(50, 300);
 			cubeend2 = new pjsx.fac.newGvector(450, 300);
 			cubesrfs = [];
-			for(var i = 0; i < 3; i++){
-				var k = i + 1;
-				console.log((50 + k * 50) + '='+ (200 + k * 20));
-				cubesrfs.push(new pjsx.fac.newGvector(50 + k * 100, 200 + k * 20));
-			}
+			cubesrfs.push(new pjsx.fac.newGvector(100, 200));
+			cubesrfs.push(new pjsx.fac.newGvector(200, 150));
+			cubesrfs.push(new pjsx.fac.newGvector(300, 200));
 			cube = new pjsx.fac.newCube(cubeend1, cubeend2, cubesrfs);
-			*/
 		};
 
 		pjs.draw = function(){
 			pjs.background(200);
 
-			fulcrum.mvTo(pjs.mouseX, pjs.mouseY);
-			end1.mvTo(pjs.mouseX, pjs.mouseY);
-			end2.mvTo(pjs.mouseX, pjs.mouseY);
+			ss.mvTo(pjs.mouseX, pjs.mouseY);
 
 			pjs.fill(255);
 			pjs.ellipse(ss.fulcrum.x, ss.fulcrum.y, 30, 30);
@@ -75,7 +71,7 @@ define(['pjs','pjsx','jquery'], function(pjs, pjsx, $){
 			pjs.ellipse(kdB.ball.x, kdB.ball.y, 5, 5);
 			*/
 
-			/*
+			cube.mvTo(pjs.mouseX, pjs.mouseY);
 			pjs.noFill();
 			var preP, curP;
 			pjs.beginShape();
@@ -92,36 +88,29 @@ define(['pjs','pjsx','jquery'], function(pjs, pjsx, $){
 				pjs.fill(0);
 				pjs.ellipse(cube.surfaces[i].fulcrum.x, cube.surfaces[i].fulcrum.y, 10, 10);
 			}
-			*/
 		};
 
 		pjs.mousePressed = function(){
 			ss.grb(pjs.mouseX, pjs.mouseY);
 			/*
-			fulcrum.grb(pjs.mouseX, pjs.mouseY);
-			end1.grb(pjs.mouseX, pjs.mouseY);
-			end2.grb(pjs.mouseX, pjs.mouseY);
 			gripA.grb(pjs.mouseX, pjs.mouseY);
 			ballA.grb(pjs.mouseX, pjs.mouseY);
 			gripB.grb(pjs.mouseX, pjs.mouseY);
 			ballB.grb(pjs.mouseX, pjs.mouseY);
 			*/
 
-			//cube.grb(pjs.mouseX, pjs.mouseY);
+			cube.grb(pjs.mouseX, pjs.mouseY);
 		};
 
 		pjs.mouseReleased = function(){
 			ss.rls();
 			/*
-			fulcrum.rls();
-			end1.rls();
-			end2.rls();
 			gripA.rls();
 			ballA.rls();
 			gripB.rls();
 			ballB.rls();
 			*/
-			//cube.rls();
+			cube.rls();
 		};
 
 		pjs.setup();

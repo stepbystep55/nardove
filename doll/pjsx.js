@@ -8,29 +8,29 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 		, y: 0
 		, preX: 0 // x of the previous position when moved
 		, preY: 0 // y of the previous position when moved
-		, rd: 10 // radious where you can grab this
+		, rad4grb: 10 // radious where you can grab this
 		, grbd: false // grabed or not
+		, callbacks: []
 
-		, init: function(ax, ay){
+		, init: function(ax, ay, options){
+			// construct as a local variable
 			this.x = ax;
 			this.y = ay;
 			this.preX = ax;
 			this.preY = ay;
+			if(options) this.rad4grb = options.radious4grab || 10;
+			this.callbacks = [];
 		}
 		, grb: function(ax, ay){
-			if(utl.tri.dist(this.x, this.y, ax, ay) < this.rd){
+			if(utl.tri.dist(this.x, this.y, ax, ay) < this.rad4grb){
 				this.grbd = true;
 			}
 		}
 		, rls: function(){
 			this.grbd = false;
 		}
-		, callbacks: []
 		, pushCallbacks: function(methodName, obj){
-			// when you copy this object using Object.create(),
-			// callbacks is also shared by copys. (callbacks is mutual)
-			// so added owner as an identifier for each callback.
-			this.callbacks.push({owner: this, methodName: methodName, obj: obj});
+			this.callbacks.push({methodName: methodName, obj: obj});
 		}
 		, mv: function(ax, ay, options){
 			// options:
@@ -46,7 +46,7 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			if(!options.nocallback){
 				for(var i = 0; i < this.callbacks.length; i++){
 					var callback = this.callbacks[i];
-					if(callback.owner === this) callback.obj[callback.methodName].call(callback.obj, this);
+					callback.obj[callback.methodName].call(callback.obj, this);
 				}
 			}
 		}
@@ -55,6 +55,7 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 		}
 
 		, show: function(){
+			pjs.textSize(8);
 			pjs.text("" + Math.round(this.x) + "," + Math.round(this.y), this.x, this.y);
 		}
 	};
@@ -122,6 +123,11 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 					, {forced: true, nocallback: true});
 			}
 		}
+		, mvTo: function(ax, ay){
+			this.fulcrum.mvTo(ax, ay);
+			this.end1.mvTo(ax, ay);
+			this.end2.mvTo(ax, ay);
+		}
 		, show: function(){
 			this.fulcrum.show();
 			this.end1.show();
@@ -164,6 +170,7 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 		, init: function(e1, e2, srfs){
 			this.end1 = e1;
 			this.end2 = e2;
+			this.surfaces = [];
 			for(var i = 0; i < srfs.length; i++){
 				var ss_e1 = factory.newGvector(srfs[i].x - 30, srfs[i].y);
 				var ss_e2 = factory.newGvector(srfs[i].x + 30, srfs[i].y);
@@ -183,6 +190,11 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			this.end1.rls();
 			this.end2.rls();
 			for(var i = 0; i < this.surfaces.length; i++) this.surfaces[i].rls();
+		}
+		, mvTo: function(ax, ay){
+			this.end1.mvTo(ax, ay);
+			this.end2.mvTo(ax, ay);
+			for(var i = 0; i < this.surfaces.length; i++) this.surfaces[i].mvTo(ax, ay);
 		}
 	};
 
