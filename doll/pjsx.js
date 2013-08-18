@@ -3,26 +3,20 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 
 	// when you grab this vector, you can move this anywhere you want.
 	var gvector = {
-		name: 'anonymous'
-		, x: 0
-		, y: 0
-		, preX: 0 // x of the previous position when moved
-		, preY: 0 // y of the previous position when moved
-		, rad4grb: 10 // radious where you can grab this
-		, grbd: false // grabed or not
-		, callbacks: []
 
-		, init: function(ax, ay, options){
-			// construct as a local variable
+		init: function(ax, ay, options){
+			// construct as local variables
+			name: 'anonymous'
 			this.x = ax;
 			this.y = ay;
-			this.preX = ax;
-			this.preY = ay;
-			if(options) this.rad4grb = options.radious4grab || 10;
+			this.preX = ax; // x of the previous position when moved
+			this.preY = ay; // y of the previous position when moved
+			this.rad4grab = (options) ? options.rad4grab : 10; // radious where you can grab this
+			this.grab = false; // grabed or not
 			this.callbacks = [];
 		}
 		, grb: function(ax, ay){
-			if(utl.tri.dist(this.x, this.y, ax, ay) < this.rad4grb){
+			if(utl.tri.dist(this.x, this.y, ax, ay) < this.rad4grab){
 				this.grbd = true;
 			}
 		}
@@ -62,14 +56,10 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 
 	// a point with two end points which can move around fulcrum.
 	var seesaw = {
-		fulcrum: null // must be gvector
-		, end1: null // must be gvector
-		, end2: null // must be gvector
-
-		, init: function(afulcrum, aend1, aend2){
-			this.fulcrum = afulcrum;
-			this.end1 = aend1;
-			this.end2 = aend2;
+		init: function(afulcrum, aend1, aend2){
+			this.fulcrum = afulcrum; // must be gvector
+			this.end1 = aend1; // must be gvector
+			this.end2 = aend2; // must be gvector
 			this.fulcrum.pushCallbacks('upd', this);
 			this.end1.pushCallbacks('upd', this);
 			this.end2.pushCallbacks('upd', this);
@@ -136,38 +126,35 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 	};
 
 	// A pair of points that one's movement affect another but another can move freely.
-	var kendama = {
-		grip: null // must be gvector
-		, ball: null // must be gvector
-
-		, init: function(agrip, aball){
-			this.grip = agrip;
-			this.ball = aball;
-			this.grip.pushCallbacks('upd', this);
+	var yoyo = {
+		init: function(afc, aax){
+			this.fulcrum = afc; // must be gvector
+			this.axel = aax; // must be gvector
+			this.fulcrum.pushCallbacks('upd', this);
 		}
 
 		, grb: function(ax, ay){
-			//console.log(ax + '=' + ay);
-			this.grip.grb(ax, ay);
-			this.ball.grb(ax, ay);
+			this.fulcrum.grb(ax, ay);
+			this.axel.grb(ax, ay);
 		}
 		, rls: function(ax, ay){
-			this.grip.rls();
-			this.ball.rls();
+			this.fulcrum.rls();
+			this.axel.rls();
 		}
 
 		, upd: function(caller){
-			this.ball.mv(
-				(this.grip.x - this.grip.preX), (this.grip.y - this.grip.preY)
+			this.axel.mv(
+				(this.fulcrum.x - this.fulcrum.preX), (this.fulcrum.y - this.fulcrum.preY)
 				, {forced: true, nocallback: true});
+		}
+		, mvTo: function(ax, ay){
+			this.fulcrum.mvTo(ax, ay);
+			this.axel.mvTo(ax, ay);
 		}
 	};
 
 	var cube = {
-		end1: null
-		,end2: null
-		,surfaces: []
-		, init: function(e1, e2, srfs){
+		init: function(e1, e2, srfs){
 			this.end1 = e1;
 			this.end2 = e2;
 			this.surfaces = [];
@@ -176,12 +163,10 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 				var ss_e2 = factory.newGvector(srfs[i].x + 30, srfs[i].y);
 				var ss = factory.newSeesaw(srfs[i], ss_e1, ss_e2);
 				this.surfaces.push(ss);
-				//this.surfaces.push(factory.newKendama(e1, ss));
 			}
 		}
 
 		, grb: function(ax, ay){
-			//console.log(ax + '=' + ay);
 			this.end1.grb(ax, ay);
 			this.end2.grb(ax, ay);
 			for(var i = 0; i < this.surfaces.length; i++) this.surfaces[i].grb(ax, ay);
@@ -198,16 +183,70 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 		}
 	};
 
+	var pong = {
+		init: function(aBarEnd1, aBarEnd2, aBall){
+			this.barEnd1 = aBarEnd1;
+			this.barEnd2 = aBarEnd2;
+			this.barCenter = this.calcBarCenter();
+			this.ball = aBall;
+			this.ballProjected = this.calcBallProjected();
+			this.barEnd1.pushCallbacks('upd', this);
+			this.barEnd2.pushCallbacks('upd', this);
+			this.ball.pushCallbacks('upd', this);
+		}
+		, calcBarCenter: function(){
+			return {
+				x: this.barEnd1.x + (this.barEnd2.x - this.barEnd1.x) / 2
+				,y: this.barEnd1.y + (this.barEnd2.y - this.barEnd1.y) / 2
+			};
+		}
+		, calcBallProjected: function(){
+			var c2b = {x: this.ball.x - this.barCenter.x, y: this.ball.y - this.barCenter.y};
+			var c2e1 = {x: this.barEnd1.x - this.barCenter.x, y: this.barEnd1.y - this.barCenter.y};
+			var c2e1Nomral = {
+				x: c2e1.x / Math.sqrt(c2e1.x * c2e1.x + c2e1.y * c2e1.y)
+				, y: c2e1.y / Math.sqrt(c2e1.x * c2e1.x + c2e1.y * c2e1.y)
+			}
+			var angle = utl.tri.ang(c2b.x, c2b.y, c2e1.x, c2e1.y);
+			var len4c2b = Math.sqrt(Math.pow(c2b.x, 2) + Math.pow(c2b.y, 2));
+			var len4c2bp = len4c2b * Math.cos(angle);
+			return {
+				x: this.barCenter.x + c2e1Nomral.x * len4c2bp
+				, y: this.barCenter.y + c2e1Nomral.y * len4c2bp
+			}
+		}
+		, upd: function(caller){
+			this.barCenter = this.calcBarCenter();
+			this.ballProjected = this.calcBallProjected();
+		}
+
+		, grb: function(ax, ay){
+			this.barEnd1.grb(ax, ay);
+			this.barEnd2.grb(ax, ay);
+			this.ball.grb(ax, ay);
+		}
+		, rls: function(ax, ay){
+			this.barEnd1.rls(ax, ay);
+			this.barEnd2.rls(ax, ay);
+			this.ball.rls(ax, ay);
+		}
+		, mvTo: function(ax, ay){
+			this.barEnd1.mvTo(ax, ay);
+			this.barEnd2.mvTo(ax, ay);
+			this.ball.mvTo(ax, ay);
+		}
+	};
+
 	var factory = {
 		newGvector: function(ax, ay){
 			var clone = Object.create(gvector);
 			clone.init(ax, ay);
 			return clone;
 		}
-		, newKendama: function(agp, abl){
-			if(_.isUndefined(agp) || _.isUndefined(abl)) throw 'need 2 args.';
-			var clone = Object.create(kendama);
-			clone.init(agp, abl);
+		, newYoyo: function(afc, aax){
+			if(_.isUndefined(afc) || _.isUndefined(aax)) throw 'need 2 args.';
+			var clone = Object.create(yoyo);
+			clone.init(afc, aax);
 			return clone;
 		}
 		, newSeesaw: function(afc, ae1, ae2){
@@ -219,6 +258,11 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 		, newCube: function(ae1, ae2, asrfs){
 			var clone = Object.create(cube);
 			clone.init(ae1, ae2, asrfs);
+			return clone;
+		}
+		, newPong: function(ae1, ae2, abl){
+			var clone = Object.create(pong);
+			clone.init(ae1, ae2, abl);
 			return clone;
 		}
 	};
