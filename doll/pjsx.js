@@ -183,13 +183,19 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 		}
 	};
 
+	// a bar and a ball.
 	var pong = {
 		init: function(aBarEnd1, aBarEnd2, aBall){
 			this.barEnd1 = aBarEnd1;
 			this.barEnd2 = aBarEnd2;
 			this.barCenter = this.calcBarCenter();
 			this.ball = aBall;
-			this.ballProjected = this.calcBallProjected();
+
+			var projected = this.calcBallProjected();
+			this.ballProjected = factory.newGvector(projected.x, projected.y, {rad4grab: 0});
+
+			this.yoyo = factory.newYoyo(this.ballProjected, this.ball);
+
 			this.barEnd1.pushCallbacks('upd', this);
 			this.barEnd2.pushCallbacks('upd', this);
 			this.ball.pushCallbacks('upd', this);
@@ -201,23 +207,18 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			};
 		}
 		, calcBallProjected: function(){
-			var c2b = {x: this.ball.x - this.barCenter.x, y: this.ball.y - this.barCenter.y};
-			var c2e1 = {x: this.barEnd1.x - this.barCenter.x, y: this.barEnd1.y - this.barCenter.y};
-			var c2e1Nomral = {
-				x: c2e1.x / Math.sqrt(c2e1.x * c2e1.x + c2e1.y * c2e1.y)
-				, y: c2e1.y / Math.sqrt(c2e1.x * c2e1.x + c2e1.y * c2e1.y)
-			}
-			var angle = utl.tri.ang(c2b.x, c2b.y, c2e1.x, c2e1.y);
-			var len4c2b = Math.sqrt(Math.pow(c2b.x, 2) + Math.pow(c2b.y, 2));
-			var len4c2bp = len4c2b * Math.cos(angle);
-			return {
-				x: this.barCenter.x + c2e1Nomral.x * len4c2bp
-				, y: this.barCenter.y + c2e1Nomral.y * len4c2bp
-			}
+			return utl.tri.prj(
+				this.barCenter.x
+				, this.barCenter.y
+				, this.barEnd1.x
+				, this.barEnd1.y
+				, this.ball.x
+				, this.ball.y);
 		}
 		, upd: function(caller){
 			this.barCenter = this.calcBarCenter();
-			this.ballProjected = this.calcBallProjected();
+			var projected = this.calcBallProjected();
+			this.ballProjected.mvTo(projected.x, projected.y, {forced: true});
 		}
 
 		, grb: function(ax, ay){

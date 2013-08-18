@@ -35,16 +35,19 @@ define(function(){
 			return {x: (pMag * Math.cos(oAng + ang)), y: (pMag * Math.sin(oAng + ang))};
 		}
 
-		// = project the point on the base line(vector composed by the origin point &  the base point).
-		, prj: function(ox, oy, bx, by, px, py){
-			var bv = [bx - ox, by - oy];
-			var pv = [px - ox, py - oy];
-			var agl = this.ang(bv[0], bv[1], pv[0], pv[1]); // angle between the base point & the target point
-			var oMag = Math.sqrt(pv[0] * pv[0] + pv[1] * pv[1]); // original magnitude of the target point
-			var aMag = oMag * Math.cos(agl); // projected magnitude
-			var bMag = Math.sqrt(bv[0] * bv[0] + bv[1] * bv[1]); // magnitude of the base point
-			var nbx = bv[0] / bMag; var nby = bv[1] / bMag; // normalized
-			return {x: (nbx * aMag), y: (nby * aMag)};
+		// = get the projected point on the line
+		, prj: function(orgnx, orgny, endx, endy, px, py){
+			var orgnToPoint = {x: px - orgnx, y: py - orgny};
+			var orgnToEnd = {x: endx - orgnx, y: endy - orgny};
+			var lengOrgnToPoint = Math.sqrt(Math.pow(orgnToPoint.x, 2) + Math.pow(orgnToPoint.y, 2));
+			var angleBetween = this.ang(orgnToPoint.x, orgnToPoint.y, orgnToEnd.x, orgnToEnd.y);
+			var lengOrgnToProjected = lengOrgnToPoint * Math.cos(angleBetween);
+			var lengOrgnToEnd = Math.sqrt(Math.pow(orgnToEnd.x, 2) + Math.pow(orgnToEnd.y, 2));
+			var orgnToEndNormalized = {x: orgnToEnd.x / lengOrgnToEnd, y: orgnToEnd.y / lengOrgnToEnd};
+			return {
+				x: orgnx + orgnToEndNormalized.x * lengOrgnToProjected
+				, y: orgny + orgnToEndNormalized.y * lengOrgnToProjected
+			};
 		}
 	};
 
