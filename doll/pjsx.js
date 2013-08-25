@@ -47,6 +47,9 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 		, mvTo: function(ax, ay, options){
 			this.mv((ax - this.x), (ay - this.y), options);
 		}
+		, vMvd: function(){
+			return {x: this.x - this.preX, y: this.y - this.preY};
+		}
 
 		, show: function(){
 			pjs.textSize(8);
@@ -185,20 +188,14 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 
 	// a bar and a ball.
 	var pong = {
-		init: function(aBarEnd1, aBarEnd2, aBall){
+		init: function(aBarEnd1, aBarEnd2, aBalls){
 			this.barEnd1 = aBarEnd1;
 			this.barEnd2 = aBarEnd2;
 			this.barCenter = this.calcBarCenter();
-			this.ball = aBall;
-
-			var projected = this.calcBallProjected();
-			this.ballProjected = factory.newGvector(projected.x, projected.y, {rad4grab: 0});
-
-			this.yoyo = factory.newYoyo(this.ballProjected, this.ball);
+			this.ballAndShadowList = []; this.addBall(aBalls);
 
 			this.barEnd1.pushCallbacks('upd', this);
 			this.barEnd2.pushCallbacks('upd', this);
-			this.ball.pushCallbacks('upd', this);
 		}
 		, calcBarCenter: function(){
 			return {
@@ -206,35 +203,95 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 				,y: this.barEnd1.y + (this.barEnd2.y - this.barEnd1.y) / 2
 			};
 		}
-		, calcBallProjected: function(){
+		, calcBallShadow: function(aBall){
 			return utl.tri.prj(
 				this.barCenter.x
 				, this.barCenter.y
 				, this.barEnd1.x
 				, this.barEnd1.y
-				, this.ball.x
-				, this.ball.y);
+				, aBall.x
+				, aBall.y);
+		}
+		, updShadow: function(caller){
+			for(var i = 0; i < this.ballAndShadowList.length; i++){
+				if(this.ballAndShadowList[i].ball === caller){
+					var shadow = this.calcBallShadow(this.ballAndShadowList[i].ball);
+					this.ballAndShadowList[i].shadow.mvTo(shadow.x, shadow.y, {forced: true, nocallback: true});
+				}
+			}
+		}
+		, addBall: function(aBalls){
+			if(!_.isArray(aBalls)) aBalls = [aBalls];
+			for(var i = 0; i < aBalls.length; i++){
+				var shadow = this.calcBallShadow(aBalls[i]);
+				this.ballAndShadowList.push({
+					ball: aBalls[i]
+					, shadow: factory.newGvector(shadow.x, shadow.y, {rad4grab: 0})
+				});
+				aBalls[i].pushCallbacks('updShadow', this);
+			}
 		}
 		, upd: function(caller){
+			var preBarCenter = this.barCenter;
+			var preDistEnd1ToCenter = utl.tri.dist(
+				this.barEnd1.preX
+				, this.barEnd1.preY
+				, preBarCenter.x
+				, preBarCenter.y);
+
 			this.barCenter = this.calcBarCenter();
-			var projected = this.calcBallProjected();
-			this.ballProjected.mvTo(projected.x, projected.y, {forced: true});
+			var distEnd1ToCenter = utl.tri.dist(
+				this.barEnd1.x
+				, this.barEnd1.y
+				, this.barCenter.x
+				, this.barCenter.y);
+
+			var ratioMvd = distEnd1ToCenter / preDistEnd1ToCenter;
+
+			for(var i = 0; i < this.ballAndShadowList.length; i++){
+
+				var preShadow = this.ballAndShadowList[i].shadow;
+				var preDistCenterToShadow = utl.tri.dist(
+					preShadow.x
+					, preShadow.y
+					, preBarCenter.x
+					, preBarCenter.y
+					);
+				var distCenterToShadow = preDistCenterToShadow * ratioMvd;
+
+				var vCenterToEnd1Normalized = utl.tri.sub(
+					this.barEnd1.x, this.barEnd1.y, this.barCenter.x, this.barCenter.y, true);
+				//console.log(vCenterToEnd1Normalized.x + ': ' + vCenterToEnd1Normalized.y);
+
+				var vCenterToShadow = {
+					x: vCenterToEnd1Normalized.x * distCenterToShadow
+					, y : vCenterToEnd1Normalized.y * distCenterToShadow};
+
+				this.ballAndShadowList[i].shadow.mvTo(
+					this.barCenter.x + vCenterToShadow.x
+					, this.barCenter.y + vCenterToShadow.y
+					, {forced: true, nocallback: true});
+
+				var ball = this.ballAndShadowList[i].ball;
+				var shadow = this.ballAndShadowList[i].shadow;
+				ball.mv(shadow.vMvd().x, shadow.vMvd().y, {forced: true, nocallback: true});
+			}
 		}
 
 		, grb: function(ax, ay){
 			this.barEnd1.grb(ax, ay);
 			this.barEnd2.grb(ax, ay);
-			this.ball.grb(ax, ay);
+			for(var i = 0; i < this.ballAndShadowList.length; i++) this.ballAndShadowList[i].ball.grb(ax, ay);
 		}
 		, rls: function(ax, ay){
-			this.barEnd1.rls(ax, ay);
-			this.barEnd2.rls(ax, ay);
-			this.ball.rls(ax, ay);
+			this.barEnd1.rls();
+			this.barEnd2.rls();
+			for(var i = 0; i < this.ballAndShadowList.length; i++) this.ballAndShadowList[i].ball.rls();
 		}
 		, mvTo: function(ax, ay){
 			this.barEnd1.mvTo(ax, ay);
 			this.barEnd2.mvTo(ax, ay);
-			this.ball.mvTo(ax, ay);
+			for(var i = 0; i < this.ballAndShadowList.length; i++) this.ballAndShadowList[i].ball.mvTo(ax, ay);
 		}
 	};
 

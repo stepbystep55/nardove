@@ -103,10 +103,14 @@ define(['pjs','pjsx','jquery'], function(pjs, pjsx, $){
 				pjs.ellipse(png.barEnd1.x, png.barEnd1.y, 10, 10);
 				pjs.ellipse(png.barEnd2.x, png.barEnd2.y, 10, 10);
 				pjs.ellipse(png.barCenter.x, png.barCenter.y, 5, 5);
-				pjs.fill(128);
-				pjs.ellipse(png.ball.x, png.ball.y, 20, 20);
-				pjs.fill(0);
-				pjs.ellipse(png.ballProjected.x, png.ballProjected.y, 10, 10);
+				for(var i = 0; i < png.ballAndShadowList.length; i++){
+					var ball = png.ballAndShadowList[i].ball;
+					var shadow = png.ballAndShadowList[i].shadow;
+					pjs.fill(128);
+					pjs.ellipse(ball.x, ball.y, 20, 20);
+					pjs.fill(0);
+					pjs.ellipse(shadow.x, shadow.y, 10, 10);
+				}
 			}
 		};
 
