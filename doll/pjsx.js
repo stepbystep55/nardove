@@ -4,29 +4,41 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 	// when you grab this vector, you can move this anywhere you want.
 	var gvector = {
 
-		init: function(ax, ay, options){
+		init: function(x, y, options){
 			// construct as local variables
 			name: 'anonymous'
-			this.x = ax;
-			this.y = ay;
-			this.preX = ax; // x of the previous position when moved
-			this.preY = ay; // y of the previous position when moved
+			this.x = x;
+			this.y = y;
+			this.preX = x; // x of the previous position when moved
+			this.preY = y; // y of the previous position when moved
 			this.rad4grab = (options) ? options.rad4grab : 10; // radious where you can grab this
 			this.grab = false; // grabed or not
 			this.callbacks = [];
+
+			return this;
 		}
-		, grb: function(ax, ay){
-			if(utl.tri.dist(this.x, this.y, ax, ay) < this.rad4grab){
+		, init0: function(p, options){
+			return this.init(p.x, p.y, options);
+		}
+		, grb: function(x, y){
+			if(utl.tri.dist(this, {x: x, y: y}) < this.rad4grab){
 				this.grbd = true;
 			}
+			return this;
 		}
+		, grb0: function(p){
+			return this.grb(p.x, p.y);
+		}
+
 		, rls: function(){
 			this.grbd = false;
+			return this;
 		}
 		, pushCallbacks: function(methodName, obj){
 			this.callbacks.push({methodName: methodName, obj: obj});
+			return this;
 		}
-		, mv: function(ax, ay, options){
+		, mv: function(x, y, options){
 			// options:
 			//   forced - true if not mind grabed or not
 			//   nocallback - true if no callback
@@ -35,7 +47,7 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			if(!this.grbd && !options.forced) return;
 
 			this.preX = this.x; this.preY = this.y;
-			this.x += ax; this.y += ay;
+			this.x += x; this.y += y;
 
 			if(!options.nocallback){
 				for(var i = 0; i < this.callbacks.length; i++){
@@ -43,17 +55,27 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 					callback.obj[callback.methodName].call(callback.obj, this);
 				}
 			}
+			return this;
 		}
-		, mvTo: function(ax, ay, options){
-			this.mv((ax - this.x), (ay - this.y), options);
+		, mv0: function(p, options){
+			return this.mv(p.x, p.y, options);
+		}
+		, mvTo: function(x, y, options){
+			return this.mv((x - this.x), (y - this.y), options);
+		}
+		, mvTo0: function(p, options){
+			return this.mvTo(p.x, p.y, options);
 		}
 		, vMvd: function(){
 			return {x: this.x - this.preX, y: this.y - this.preY};
 		}
+		, pre: function(){
+			return {x: this.preX, y: this.preY};
+		}
 
 		, show: function(){
 			pjs.textSize(8);
-			pjs.text("" + Math.round(this.x) + "," + Math.round(this.y), this.x, this.y);
+			pjs.text('' + Math.round(this.x) + ',' + Math.round(this.y), this.x, this.y);
 		}
 	};
 
@@ -198,19 +220,10 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			this.barEnd2.pushCallbacks('upd', this);
 		}
 		, calcBarCenter: function(){
-			return {
-				x: this.barEnd1.x + (this.barEnd2.x - this.barEnd1.x) / 2
-				,y: this.barEnd1.y + (this.barEnd2.y - this.barEnd1.y) / 2
-			};
+			return utl.tri.mid(this.barEnd1, this.barEnd2);
 		}
 		, calcBallShadow: function(aBall){
-			return utl.tri.prj(
-				this.barCenter.x
-				, this.barCenter.y
-				, this.barEnd1.x
-				, this.barEnd1.y
-				, aBall.x
-				, aBall.y);
+			return utl.tri.prj(this.barEnd1, this.barEnd2, aBall);
 		}
 		, updShadow: function(caller){
 			for(var i = 0; i < this.ballAndShadowList.length; i++){
@@ -233,35 +246,21 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 		}
 		, upd: function(caller){
 			var preBarCenter = this.barCenter;
-			var preDistEnd1ToCenter = utl.tri.dist(
-				this.barEnd1.preX
-				, this.barEnd1.preY
-				, preBarCenter.x
-				, preBarCenter.y);
+			var preDistEnd1ToCenter = utl.tri.dist(this.barEnd1.pre(), preBarCenter);
 
 			this.barCenter = this.calcBarCenter();
-			var distEnd1ToCenter = utl.tri.dist(
-				this.barEnd1.x
-				, this.barEnd1.y
-				, this.barCenter.x
-				, this.barCenter.y);
+			var distEnd1ToCenter = utl.tri.dist(this.barEnd1, this.barCenter);
 
 			var ratioMvd = distEnd1ToCenter / preDistEnd1ToCenter;
 
 			for(var i = 0; i < this.ballAndShadowList.length; i++){
 
 				var preShadow = this.ballAndShadowList[i].shadow;
-				var preDistCenterToShadow = utl.tri.dist(
-					preShadow.x
-					, preShadow.y
-					, preBarCenter.x
-					, preBarCenter.y
-					);
+				var preDistCenterToShadow = utl.tri.dist(preShadow, preBarCenter);
 				var distCenterToShadow = preDistCenterToShadow * ratioMvd;
 
 				var vCenterToEnd1Normalized = utl.tri.sub(
 					this.barEnd1.x, this.barEnd1.y, this.barCenter.x, this.barCenter.y, true);
-				//console.log(vCenterToEnd1Normalized.x + ': ' + vCenterToEnd1Normalized.y);
 
 				var vCenterToShadow = {
 					x: vCenterToEnd1Normalized.x * distCenterToShadow
@@ -273,8 +272,12 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 					, {forced: true, nocallback: true});
 
 				var ball = this.ballAndShadowList[i].ball;
+				var shadowToBall = {
+					x: ball.x - this.ballAndShadowList[i].shadow.pre().x
+					, y: ball.y - this.ballAndShadowList[i].shadow.pre().y
+				};
 				var shadow = this.ballAndShadowList[i].shadow;
-				ball.mv(shadow.vMvd().x, shadow.vMvd().y, {forced: true, nocallback: true});
+				ball.mvTo0(utl.tri.add(shadow, shadowToBall), {forced: true, nocallback: true});
 			}
 		}
 
@@ -296,31 +299,31 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 	};
 
 	var factory = {
-		newGvector: function(ax, ay){
+		newGvector: function(x, y){
 			var clone = Object.create(gvector);
-			clone.init(ax, ay);
+			clone.init(x, y);
 			return clone;
 		}
-		, newYoyo: function(afc, aax){
-			if(_.isUndefined(afc) || _.isUndefined(aax)) throw 'need 2 args.';
+		, newYoyo: function(fc, ax){
+			if(_.isUndefined(fc) || _.isUndefined(ax)) throw 'need 2 args.';
 			var clone = Object.create(yoyo);
-			clone.init(afc, aax);
+			clone.init(fc, ax);
 			return clone;
 		}
-		, newSeesaw: function(afc, ae1, ae2){
-			if(_.isUndefined(afc) || _.isUndefined(ae1) || _.isUndefined(ae2)) throw 'need 3 args.';
+		, newSeesaw: function(fc, e1, e2){
+			if(_.isUndefined(fc) || _.isUndefined(e1) || _.isUndefined(e2)) throw 'need 3 args.';
 			var clone = Object.create(seesaw);
-			clone.init(afc, ae1, ae2);
+			clone.init(fc, e1, e2);
 			return clone;
 		}
-		, newCube: function(ae1, ae2, asrfs){
+		, newCube: function(e1, e2, srfs){
 			var clone = Object.create(cube);
-			clone.init(ae1, ae2, asrfs);
+			clone.init(e1, e2, srfs);
 			return clone;
 		}
-		, newPong: function(ae1, ae2, abl){
+		, newPong: function(e1, e2, bl){
 			var clone = Object.create(pong);
-			clone.init(ae1, ae2, abl);
+			clone.init(e1, e2, bl);
 			return clone;
 		}
 	};

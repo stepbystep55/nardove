@@ -16,7 +16,7 @@ define(['pjs','pjsx','jquery'], function(pjs, pjsx, $){
 		var fulcrum, end1, end2, ss;
 		var fulcrumA, axelA, yyA;
 		var fulcrumB, axelB, yyB;
-		var pe1, pe2, pb, png;
+		var pe1, pe2, pb, pb2, png;
 
 		var cubeend1, cubeend2, cubesrfs, cube;
 
@@ -52,7 +52,9 @@ define(['pjs','pjsx','jquery'], function(pjs, pjsx, $){
 				pe1 = new pjsx.fac.newGvector(150, 100);
 				pe2 = new pjsx.fac.newGvector(400, 150);
 				pb = new pjsx.fac.newGvector(250, 50);
-				png = new pjsx.fac.newPong(pe1, pe2, pb);
+				pb2 = new pjsx.fac.newGvector(200, 50);
+				png = new pjsx.fac.newPong(pe1, pe2, [pb, pb2]);
+				//png = new pjsx.fac.newPong(pe1, pe2, pb);
 			}
 		};
 
