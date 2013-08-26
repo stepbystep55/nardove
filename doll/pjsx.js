@@ -9,35 +9,41 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			name: 'anonymous'
 			this.x = x;
 			this.y = y;
-			this.preX = x; // x of the previous position when moved
-			this.preY = y; // y of the previous position when moved
+			this.prevX = x; // x of the previous position after moving
+			this.prevY = y; // y of the previous position after moving
 			this.rad4grab = (options) ? options.rad4grab : 10; // radious where you can grab this
 			this.grab = false; // grabed or not
 			this.callbacks = [];
 
 			return this;
 		}
-		, init0: function(p, options){
+		, _init: function(p, options){
 			return this.init(p.x, p.y, options);
 		}
+
+		// grab this
 		, grb: function(x, y){
 			if(utl.tri.dist(this, {x: x, y: y}) < this.rad4grab){
 				this.grbd = true;
 			}
 			return this;
 		}
-		, grb0: function(p){
+		, _grb: function(p){
 			return this.grb(p.x, p.y);
 		}
 
+		// release this
 		, rls: function(){
 			this.grbd = false;
 			return this;
 		}
+
 		, pushCallbacks: function(methodName, obj){
 			this.callbacks.push({methodName: methodName, obj: obj});
 			return this;
 		}
+
+		// move specified points
 		, mv: function(x, y, options){
 			// options:
 			//   forced - true if not mind grabed or not
@@ -46,7 +52,7 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 
 			if(!this.grbd && !options.forced) return;
 
-			this.preX = this.x; this.preY = this.y;
+			this.prevX = this.x; this.prevY = this.y;
 			this.x += x; this.y += y;
 
 			if(!options.nocallback){
@@ -57,20 +63,38 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			}
 			return this;
 		}
-		, mv0: function(p, options){
+		, _mv: function(p, options){
 			return this.mv(p.x, p.y, options);
 		}
+
+		// move to the specified location 
 		, mvTo: function(x, y, options){
 			return this.mv((x - this.x), (y - this.y), options);
 		}
-		, mvTo0: function(p, options){
+		, _mvTo: function(p, options){
 			return this.mvTo(p.x, p.y, options);
 		}
-		, vMvd: function(){
-			return {x: this.x - this.preX, y: this.y - this.preY};
+
+		// get the track of moving
+		, trk: function(){
+			return {x: this.x - this.prevX, y: this.y - this.prevY};
 		}
-		, pre: function(){
-			return {x: this.preX, y: this.preY};
+
+		// get the previous location
+		, prev: function(){
+			return {x: this.prevX, y: this.prevY};
+		}
+
+		// get the difference between this and another
+		, diff: function(p){
+			return {x: this.x - p.x, y: this.y - p.y};
+		}
+		, diffInPrev: function(p){
+			return {x: this.prevX - p.x, y: this.prevY - p.y};
+		}
+		// get the sum of this and another
+		, sum: function(p){
+			return {x: this.x + p.x, y: this.y + p.y};
 		}
 
 		, show: function(){
@@ -91,7 +115,6 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 		}
 
 		, grb: function(ax, ay){
-			//console.log(ax + '=' + ay);
 			this.fulcrum.grb(ax, ay);
 			this.end1.grb(ax, ay);
 			this.end2.grb(ax, ay);
@@ -104,38 +127,26 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 
 		, upd: function(caller){
 			if(caller === this.fulcrum) {
-				this.end1.mv(
-					(this.fulcrum.x - this.fulcrum.preX), (this.fulcrum.y - this.fulcrum.preY)
-					, {forced: true, nocallback: true});
-				this.end2.mv(
-					(this.fulcrum.x - this.fulcrum.preX), (this.fulcrum.y - this.fulcrum.preY)
-					, {forced: true, nocallback: true});
+				this.end1._mv(this.fulcrum.trk(), {forced: true, nocallback: true});
+				this.end2._mv(this.fulcrum.trk(), {forced: true, nocallback: true});
 			}
 			if(caller === this.end1){
 				// calculate moved angle
 				var angle = utl.tri.ang(
-					(this.end1.preX - this.fulcrum.x), (this.end1.preY - this.fulcrum.y)
-					, (this.end1.x - this.fulcrum.x), (this.end1.y - this.fulcrum.y)
-				);
+					this.end1.diffInPrev(this.fulcrum) , this.end1.diff(this.fulcrum));
 				// calculate moved vector
-				var mvd = utl.tri.mv((this.end2.x - this.fulcrum.x), (this.end2.y - this.fulcrum.y), angle);
+				var mvd = utl.tri.mv(this.end2.diff(this.fulcrum), angle);
 
-				this.end2.mvTo(
-					this.fulcrum.x + mvd.x, this.fulcrum.y + mvd.y
-					, {forced: true, nocallback: true});
+				this.end2._mvTo(this.fulcrum.sum(mvd), {forced: true, nocallback: true});
 			}
 			if(caller === this.end2){
 				// calculate moved angle
 				var angle = utl.tri.ang(
-					(this.end2.preX - this.fulcrum.x), (this.end2.preY - this.fulcrum.y)
-					, (this.end2.x - this.fulcrum.x), (this.end2.y - this.fulcrum.y)
-				);
+					this.end2.diffInPrev(this.fulcrum) , this.end2.diff(this.fulcrum));
 				// calculate moved vector
-				var mvd = utl.tri.mv((this.end1.x - this.fulcrum.x), (this.end1.y - this.fulcrum.y), angle);
+				var mvd = utl.tri.mv(this.end1.diff(this.fulcrum), angle);
 
-				this.end1.mvTo(
-					this.fulcrum.x + mvd.x, this.fulcrum.y + mvd.y
-					, {forced: true, nocallback: true});
+				this.end1._mvTo(this.fulcrum.sum(mvd) , {forced: true, nocallback: true});
 			}
 		}
 		, mvTo: function(ax, ay){
@@ -168,9 +179,7 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 		}
 
 		, upd: function(caller){
-			this.axel.mv(
-				(this.fulcrum.x - this.fulcrum.preX), (this.fulcrum.y - this.fulcrum.preY)
-				, {forced: true, nocallback: true});
+			this.axel._mv(this.fulcrum.trk(), {forced: true, nocallback: true});
 		}
 		, mvTo: function(ax, ay){
 			this.fulcrum.mvTo(ax, ay);
@@ -229,7 +238,7 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			for(var i = 0; i < this.ballAndShadowList.length; i++){
 				if(this.ballAndShadowList[i].ball === caller){
 					var shadow = this.calcBallShadow(this.ballAndShadowList[i].ball);
-					this.ballAndShadowList[i].shadow.mvTo(shadow.x, shadow.y, {forced: true, nocallback: true});
+					this.ballAndShadowList[i].shadow._mvTo(shadow, {forced: true, nocallback: true});
 				}
 			}
 		}
@@ -237,6 +246,7 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			if(!_.isArray(aBalls)) aBalls = [aBalls];
 			for(var i = 0; i < aBalls.length; i++){
 				var shadow = this.calcBallShadow(aBalls[i]);
+				console.log(shadow.x + ': '+ shadow.y);
 				this.ballAndShadowList.push({
 					ball: aBalls[i]
 					, shadow: factory.newGvector(shadow.x, shadow.y, {rad4grab: 0})
@@ -246,7 +256,7 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 		}
 		, upd: function(caller){
 			var preBarCenter = this.barCenter;
-			var preDistEnd1ToCenter = utl.tri.dist(this.barEnd1.pre(), preBarCenter);
+			var preDistEnd1ToCenter = utl.tri.dist(this.barEnd1.prev(), preBarCenter);
 
 			this.barCenter = this.calcBarCenter();
 			var distEnd1ToCenter = utl.tri.dist(this.barEnd1, this.barCenter);
@@ -259,8 +269,7 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 				var preDistCenterToShadow = utl.tri.dist(preShadow, preBarCenter);
 				var distCenterToShadow = preDistCenterToShadow * ratioMvd;
 
-				var vCenterToEnd1Normalized = utl.tri.sub(
-					this.barEnd1.x, this.barEnd1.y, this.barCenter.x, this.barCenter.y, true);
+				var vCenterToEnd1Normalized = utl.tri.sub(this.barEnd1, this.barCenter, true);
 
 				var vCenterToShadow = {
 					x: vCenterToEnd1Normalized.x * distCenterToShadow
@@ -273,11 +282,11 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 
 				var ball = this.ballAndShadowList[i].ball;
 				var shadowToBall = {
-					x: ball.x - this.ballAndShadowList[i].shadow.pre().x
-					, y: ball.y - this.ballAndShadowList[i].shadow.pre().y
+					x: ball.x - this.ballAndShadowList[i].shadow.prev().x
+					, y: ball.y - this.ballAndShadowList[i].shadow.prev().y
 				};
 				var shadow = this.ballAndShadowList[i].shadow;
-				ball.mvTo0(utl.tri.add(shadow, shadowToBall), {forced: true, nocallback: true});
+				ball._mvTo(utl.tri.add(shadow, shadowToBall), {forced: true, nocallback: true});
 			}
 		}
 

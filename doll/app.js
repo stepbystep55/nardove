@@ -52,9 +52,9 @@ define(['pjs','pjsx','jquery'], function(pjs, pjsx, $){
 				pe1 = new pjsx.fac.newGvector(150, 100);
 				pe2 = new pjsx.fac.newGvector(400, 150);
 				pb = new pjsx.fac.newGvector(250, 50);
-				pb2 = new pjsx.fac.newGvector(200, 50);
-				png = new pjsx.fac.newPong(pe1, pe2, [pb, pb2]);
-				//png = new pjsx.fac.newPong(pe1, pe2, pb);
+				//pb2 = new pjsx.fac.newGvector(200, 50);
+				//png = new pjsx.fac.newPong(pe1, pe2, [pb, pb2]);
+				png = new pjsx.fac.newPong(pe1, pe2, pb);
 			}
 		};
 
