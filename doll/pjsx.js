@@ -168,27 +168,33 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 
 	// A pair of points that one's movement affect another but another can move freely.
 	var yoyo = {
-		init: function(afc, aax){
+		init: function(afc, aaxls){
 			this.fulcrum = afc; // must be gvector
-			this.axel = aax; // must be gvector
+			this.axls = []; this.addAxls(aaxls); // must be gvector
 			this.fulcrum.pushCallbacks('upd', this);
+		}
+		, addAxls: function(aaxls){
+			if(!_.isArray(aaxls)) aaxls = [aaxls];
+			for(var i = 0; i < aaxls.length; i++) this.axls.push(aaxls[i]);
 		}
 
 		, grb: function(ax, ay){
 			this.fulcrum.grb(ax, ay);
-			this.axel.grb(ax, ay);
+			for(var i = 0; i < this.axls.length; i++) this.axls[i].grb(ax, ay);
 		}
-		, rls: function(ax, ay){
+		, rls: function(){
 			this.fulcrum.rls();
-			this.axel.rls();
+			for(var i = 0; i < this.axls.length; i++) this.axls[i].rls();
 		}
 
 		, upd: function(caller){
-			this.axel._mv(this.fulcrum.trk(), {forced: true, nocallback: true});
+			for(var i = 0; i < this.axls.length; i++){
+				this.axls[i]._mv(this.fulcrum.trk(), {forced: true, nocallback: true});
+			}
 		}
 		, mvTo: function(ax, ay){
 			this.fulcrum.mvTo(ax, ay);
-			this.axel.mvTo(ax, ay);
+			for(var i = 0; i < this.axls.length; i++) this.axls[i].mvTo(ax, ay);
 		}
 	};
 
@@ -229,8 +235,7 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			this.barEnd2 = aBarEnd2;
 			this.barCenter = factory.newGvector(0, 0, {rad4grab: 0}); // at the start, init by 0
 			this.updBarCenter();
-			this.balls = [];
-			this.addBall(aBalls);
+			this.balls = []; this.addBall(aBalls);
 
 			this.barEnd1.pushCallbacks('upd', this);
 			this.barEnd2.pushCallbacks('upd', this);
@@ -324,10 +329,10 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			clone.init(x, y);
 			return clone;
 		}
-		, newYoyo: function(fc, ax){
-			if(_.isUndefined(fc) || _.isUndefined(ax)) throw 'need 2 args.';
+		, newYoyo: function(fc, axls){
+			if(_.isUndefined(fc) || _.isUndefined(axls)) throw 'need 2 args.';
 			var clone = Object.create(yoyo);
-			clone.init(fc, ax);
+			clone.init(fc, axls);
 			return clone;
 		}
 		, newSeesaw: function(fc, e1, e2){

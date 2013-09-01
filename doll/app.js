@@ -14,7 +14,7 @@ define(['pjs','pjsx','jquery'], function(pjs, pjsx, $){
 		var which = 4;
 
 		var fulcrum, end1, end2, ss;
-		var fulcrumA, axelA, yyA;
+		var fulcrumA, axelA, axelA2, yyA;
 		var fulcrumB, axelB, yyB;
 		var pe1, pe2, pb, pb2, png;
 
@@ -32,8 +32,9 @@ define(['pjs','pjsx','jquery'], function(pjs, pjsx, $){
 
 			}else if(which == 2){
 				axelA = new pjsx.fac.newGvector(350, 300);
+				axelA2 = new pjsx.fac.newGvector(250, 200);
 				fulcrumA = new pjsx.fac.newGvector(300, 300);
-				yyA = new pjsx.fac.newYoyo(fulcrumA, axelA);
+				yyA = new pjsx.fac.newYoyo(fulcrumA, [axelA, axelA2]);
 
 				axelB = new pjsx.fac.newGvector(150, 100);
 				fulcrumB = new pjsx.fac.newGvector(100, 100);
@@ -74,11 +75,11 @@ define(['pjs','pjsx','jquery'], function(pjs, pjsx, $){
 			}else if(which == 2){
 				yyA.mvTo(pjs.mouseX, pjs.mouseY);
 				pjs.ellipse(yyA.fulcrum.x, yyA.fulcrum.y, 10, 10);
-				pjs.ellipse(yyA.axel.x, yyA.axel.y, 5, 5);
+				for(var i = 0; i < yyA.axls.length; i++) pjs.ellipse(yyA.axls[i].x, yyA.axls[i].y, 5, 5);
 
 				yyB.mvTo(pjs.mouseX, pjs.mouseY);
 				pjs.ellipse(yyB.fulcrum.x, yyB.fulcrum.y, 10, 10);
-				pjs.ellipse(yyB.axel.x, yyB.axel.y, 5, 5);
+				for(var i = 0; i < yyB.axls.length; i++) pjs.ellipse(yyB.axls[i].x, yyB.axls[i].y, 5, 5);
 
 			}else if(which == 3){
 				cube.mvTo(pjs.mouseX, pjs.mouseY);
