@@ -38,6 +38,9 @@ define(function(){
 			}
 			return {x: x, y: y};
 		}
+		, mult: function(p, n){
+			return {x: p.x * n, y: p.y * n};
+		}
 
 		// = get the point moved by specified angle
 		, mv: function(p, ang){
