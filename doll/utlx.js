@@ -18,18 +18,18 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			return this;
 		}
 		, _init: function(p, options){
-			if(!_.isObject(p)) throw 'args not object';
+			if(!_.isObject(p)) throw 'arg not object';
 			return this.init(p.x, p.y, options);
 		}
 
 		// grab this
 		, grb: function(x, y){
-			if(!_.isNumber(x) || !_.isNumber(y)) throw 'args not number';
+			if(!_.isNumber(x) || !_.isNumber(y)) throw 'arg not number';
 			if(utl.tri.dist(this, {x: x, y: y}) < this.rad4grab) this.grbd = true;
 			return this;
 		}
 		, _grb: function(p){
-			if(!_.isObject(p)) throw 'args not object';
+			if(!_.isObject(p)) throw 'arg not object';
 			return this.grb(p.x, p.y);
 		}
 
@@ -46,7 +46,7 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 
 		// move specified points
 		, mv: function(x, y, options){
-			if(!_.isNumber(x) || !_.isNumber(y)) throw 'args not number';
+			if(!_.isNumber(x) || !_.isNumber(y)) throw 'arg not number';
 			// options:
 			//   forced - true if not mind grabed or not
 			//   nocallback - true if no callback
@@ -66,17 +66,17 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			return this;
 		}
 		, _mv: function(p, options){
-			if(!_.isObject(p)) throw 'args not object';
+			if(!_.isObject(p)) throw 'arg not object';
 			return this.mv(p.x, p.y, options);
 		}
 
 		// move to the specified location 
 		, mvTo: function(x, y, options){
-			if(!_.isNumber(x) || !_.isNumber(y)) throw 'args not number';
+			if(!_.isNumber(x) || !_.isNumber(y)) throw 'arg not number';
 			return this.mv((x - this.x), (y - this.y), options);
 		}
 		, _mvTo: function(p, options){
-			if(!_.isObject(p)) throw 'args not object';
+			if(!_.isObject(p)) throw 'arg not object';
 			return this.mvTo(p.x, p.y, options);
 		}
 
@@ -105,6 +105,9 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 		, show: function(){
 			pjs.textSize(8);
 			pjs.text('' + Math.round(this.x) + ',' + Math.round(this.y), this.x, this.y);
+		}
+		, dump: function(){
+			return 'x='+this.x+', y='+this.y+', prevX='+this.prevX+', prevY='+this.prevY;
 		}
 	};
 
@@ -198,36 +201,6 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 		}
 	};
 
-	var cube = {
-		init: function(e1, e2, srfs){
-			this.end1 = e1;
-			this.end2 = e2;
-			this.surfaces = [];
-			for(var i = 0; i < srfs.length; i++){
-				var ss_e1 = factory.newGvector(srfs[i].x - 30, srfs[i].y);
-				var ss_e2 = factory.newGvector(srfs[i].x + 30, srfs[i].y);
-				var ss = factory.newSeesaw(srfs[i], ss_e1, ss_e2);
-				this.surfaces.push(ss);
-			}
-		}
-
-		, grb: function(ax, ay){
-			this.end1.grb(ax, ay);
-			this.end2.grb(ax, ay);
-			for(var i = 0; i < this.surfaces.length; i++) this.surfaces[i].grb(ax, ay);
-		}
-		, rls: function(){
-			this.end1.rls();
-			this.end2.rls();
-			for(var i = 0; i < this.surfaces.length; i++) this.surfaces[i].rls();
-		}
-		, mvTo: function(ax, ay){
-			this.end1.mvTo(ax, ay);
-			this.end2.mvTo(ax, ay);
-			for(var i = 0; i < this.surfaces.length; i++) this.surfaces[i].mvTo(ax, ay);
-		}
-	};
-
 	// a bar and a ball.
 	var pong = {
 		init: function(aBarEnd1, aBarEnd2, aBalls){
@@ -247,62 +220,70 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			this.barCenter._mvTo(center, {forced: true});
 			return this;
 		}
-		, updShadow: function(caller){
-			return this.calcShadow(caller);
-		}
-		, calcShadow: function(aBall){
-			var shadow = utl.tri.prj(this.barEnd1, this.barEnd2, aBall);
-			aBall.shadow._mvTo(shadow, {forced:true});
-			return this;
-		}
 		, addBall: function(aBalls){
 			if(!_.isArray(aBalls)) aBalls = [aBalls];
+			var thisPong = this;
+
 			for(var i = 0; i < aBalls.length; i++){
-				aBalls[i].shadow = factory.newGvector(0, 0, {rad4grab: 0}); // at the end, init by 0
-				this.calcShadow(aBalls[i]);
-				this.balls.push(aBalls[i]);
-				aBalls[i].pushCallbacks('updShadow', this);
+				var ball = aBalls[i];
+				ball = this.enhanceBall(ball);
+				this.balls.push(ball);
 			}
 			return this;
 		}
+		, enhanceBall: function(aBall){
+			var thisPong = this;
+			aBall.shadow = factory.newGvector(0, 0, {rad4grab: 0}); // at the start, init by 0
+			aBall.updShadow = function(){
+				var shadow = utl.tri.prj(thisPong.barEnd1, thisPong.barEnd2, aBall);
+				aBall.shadow._mvTo(shadow, {forced:true, nocallback:true});
+				return aBall;
+			}
+			aBall.distToShadow = function(){
+				return utl.tri.dist(aBall.shadow, aBall);
+			}
+			aBall.updShadow();
+			aBall.pushCallbacks('updShadow', aBall);
+			return aBall;
+		}
+		, ratioBarLengthVaried: function(){
+			var distEnd1ToEnd2Prev = utl.tri.dist(this.barEnd2.prev(), this.barEnd1.prev());
+			var distEnd1ToEnd2 = utl.tri.dist(this.barEnd2, this.barEnd1);
+			return distEnd1ToEnd2 / distEnd1ToEnd2Prev;
+		}
 		, upd: function(caller){
 			this.updBarCenter();
-
-			var preDistEnd1ToCenter = utl.tri.dist(this.barCenter.prev(), this.barEnd1.prev());
-			var distEnd1ToCenter = utl.tri.dist(this.barCenter, this.barEnd1);
-
-			var ratioMvd = distEnd1ToCenter / preDistEnd1ToCenter;
 
 			for(var i = 0; i < this.balls.length; i++){
 				var ball = this.balls[i];
 
 				var distBallToShadow = utl.tri.dist(ball.shadow, ball);
-				var angleCenterToBall = utl.tri.ang(
-					this.barCenter.diff(ball.shadow)
-					, ball.diff(ball.shadow)
-					);
 
-				this.updShadow(ball);
-
+				// at first, put the shadow on the bar
+				ball.updShadow();
+				// adjust the shadow position relative to the bar length
 				var preDistCenterToShadow = utl.tri.dist(ball.shadow.prev(), this.barCenter.prev());
-				var distCenterToShadow = preDistCenterToShadow * ratioMvd;
-
-				var vCenterToEnd1Normalized = utl.tri.sub(this.barEnd1, this.barCenter, true);
-				var vCenterToShadow = utl.tri.mult(vCenterToEnd1Normalized, distCenterToShadow);
-
+				var distCenterToShadow = preDistCenterToShadow * this.ratioBarLengthVaried();
+				var vCenterToShadowNormalized = utl.tri.sub(ball.shadow, this.barCenter, true);
+				var vCenterToShadow = utl.tri.mult(vCenterToShadowNormalized, distCenterToShadow);
 				ball.shadow.mvTo(
 					this.barCenter.x + vCenterToShadow.x
 					, this.barCenter.y + vCenterToShadow.y
 					, {forced: true, nocallback: true});
 
-				// move ball
-				var vShadowToCenterNormalized = utl.tri.sub(this.barCenter, ball.shadow, true);
-				if(angleCenterToBall > 0){var direct = 1;}
-				else if(angleCenterToBall < 0){var direct = -1;}
-				else{ var direct = 0};
-				var vShadowToBallNormalized = utl.tri.mv(vShadowToCenterNormalized, direct * (Math.PI / 2));
+				// then, adjust the ball position
+				if(caller === this.barEnd1){
+					var fixed = this.barEnd2; var moved = this.barEnd1;
+				}else if(caller === this.barEnd2){
+					var fixed = this.barEnd1; var moved = this.barEnd2;
+				}
+				var vFixedToMovedPrev = utl.tri.sub(moved.prev(), fixed);
+				var vFixedToMoved = utl.tri.sub(moved.prev(), fixed);
+				var mvdAngle = utl.tri.ang(vFixedToMovedPrev, vFixedToMoved);
+				var vShadowToBallNormalized = utl.tri.sub(ball, ball.shadow.prev(), true);
 				var vShadowToBall = utl.tri.mult(vShadowToBallNormalized, distBallToShadow);
-				ball._mvTo(ball.shadow.sum(vShadowToBall), {forced:true, nocallback:true});
+				var vShadowToBallMvd = utl.tri.mv(vShadowToBall, mvdAngle);
+				ball._mvTo(ball.shadow.sum(vShadowToBallMvd), {forced:true, nocallback:true});
 			}
 		}
 
@@ -339,11 +320,6 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			if(_.isUndefined(fc) || _.isUndefined(e1) || _.isUndefined(e2)) throw 'need 3 args.';
 			var clone = Object.create(seesaw);
 			clone.init(fc, e1, e2);
-			return clone;
-		}
-		, newCube: function(e1, e2, srfs){
-			var clone = Object.create(cube);
-			clone.init(e1, e2, srfs);
 			return clone;
 		}
 		, newPong: function(e1, e2, bl){

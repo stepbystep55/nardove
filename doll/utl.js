@@ -16,6 +16,9 @@ define(function(){
 			var np2x = p2.x / pMag; var np2y = p2.y / pMag; // normalized
 			return (Math.atan2(np2y, np2x) - Math.atan2(npy, npx));
 		}
+		, toDgr: function(ang){
+			return ang * 180 / Math.PI;
+		}
 
 		, add: function(p1, p2, normalized){
 			var x = p1.x + p2.x;
@@ -70,6 +73,14 @@ define(function(){
 				x: orgn.x + orgnToEndNormalized.x * lengOrgnToProjected
 				, y: orgn.y + orgnToEndNormalized.y * lengOrgnToProjected
 			};
+		}
+
+		// = return 1 if p in the 1st or 3rd quadrant, unless -1
+		, poleQuad: function(orgn, p){
+			if(p.x === orgn.x || p.y === orgn.y) return 0;
+			var xpole = (p.x > orgn.x) ? 1 : -1;
+			var ypole = (p.y > orgn.y) ? 1 : -1;
+			return xpole * ypole;
 		}
 	};
 
