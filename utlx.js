@@ -1,18 +1,16 @@
-define(['underscore','utl','pjs'], function(_, utl,pjs){
+define(['underscore','utl'], function(_, utl){
 	'use strict';
 
-	// when you grab this vector, you can move this anywhere you want.
-	var gvector = {
-
-		init: function(x, y, options){
+	// movable vector. you can move this vector anywhere you want.
+	var mctr = {
+		name: 'mctr'
+		, init: function(x, y, options){
 			// construct as local variables
 			name: 'anonymous'
 			this.x = x;
 			this.y = y;
 			this.prevX = x; // x of the previous position after moving
 			this.prevY = y; // y of the previous position after moving
-			this.rad4grab = (options) ? options.rad4grab : 10; // radious where you can grab this
-			this.grab = false; // grabed or not
 			this.callbacks = [];
 
 			return this;
@@ -20,23 +18,6 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 		, _init: function(p, options){
 			if(!_.isObject(p)) throw 'arg not object';
 			return this.init(p.x, p.y, options);
-		}
-
-		// grab this
-		, grb: function(x, y){
-			if(!_.isNumber(x) || !_.isNumber(y)) throw 'arg not number';
-			if(utl.tri.dist(this, {x: x, y: y}) < this.rad4grab) this.grbd = true;
-			return this;
-		}
-		, _grb: function(p){
-			if(!_.isObject(p)) throw 'arg not object';
-			return this.grb(p.x, p.y);
-		}
-
-		// release this
-		, rls: function(){
-			this.grbd = false;
-			return this;
 		}
 
 		, pushCallbacks: function(methodName, obj){
@@ -52,7 +33,7 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			//   nocallback - true if no callback
 			if(!options) options = {};
 
-			if(!this.grbd && !options.forced) return;
+			//if(!grbd && !options.forced) return;
 
 			this.prevX = this.x; this.prevY = this.y;
 			this.x += x; this.y += y;
@@ -102,14 +83,55 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			return {x: this.x + p.x, y: this.y + p.y};
 		}
 
-		, show: function(){
-			pjs.textSize(8);
-			pjs.text('' + Math.round(this.x) + ',' + Math.round(this.y), this.x, this.y);
-		}
 		, dump: function(){
 			return 'x='+this.x+', y='+this.y+', prevX='+this.prevX+', prevY='+this.prevY;
 		}
 	};
+
+	// when you grab this vector, you can move this anywhere you want.
+	var gctr = Object.create(mctr, {
+		name: {
+			value: 'gctr'
+		}
+		, init: {
+			value: function(x, y, options){
+				mctr.init.call(this, x, y, options);
+				// construct as local variables
+				this.rad4grab = (options) ? options.rad4grab : 10; // radious where you can grab this
+				this.grab = false; // grabed or not
+
+				return this;
+			}
+		}
+			// grab this
+		, grb: {
+			value: function(x, y){
+				if(!_.isNumber(x) || !_.isNumber(y)) throw 'arg not number';
+				if(utl.tri.dist(this, {x: x, y: y}) < this.rad4grab) this.grbd = true;
+				return this;
+			}
+		}
+		, _grb: {
+			value: function(p){
+				if(!_.isObject(p)) throw 'arg not object';
+				return this.grb(p.x, p.y);
+			}
+		}
+		// release this
+		, rls: {
+			value: function(){
+				this.grbd = false;
+				return this;
+			}
+		}
+		, mv: {
+			value: function(x, y, options){
+				if(!options) options = {};
+				if(!this.grbd && !options.forced) return;
+				return mctr.mv.call(this, x, y, options);
+			}
+		}
+	});
 
 	// a point with two end points which can move around fulcrum.
 	var seesaw = {
@@ -162,11 +184,6 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			this.end1.mvTo(ax, ay);
 			this.end2.mvTo(ax, ay);
 		}
-		, show: function(){
-			this.fulcrum.show();
-			this.end1.show();
-			this.end2.show();
-		}
 	};
 
 	// A pair of points that one's movement affect another but another can move freely.
@@ -201,14 +218,14 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 		}
 	};
 
-	// a bar and a ball.
+	// a bar and balls.
 	var pong = {
 		init: function(aBarEnd1, aBarEnd2, aBalls){
 			this.barEnd1 = aBarEnd1;
 			this.barEnd2 = aBarEnd2;
-			this.barCenter = factory.newGvector(0, 0, {rad4grab: 0}); // at the start, init by 0
+			this.barCenter = factory.newMctr(0, 0); // at the start, init by 0
 			this.updBarCenter();
-			this.balls = []; this.addBall(aBalls);
+			this.balls = []; this.addBalls(aBalls);
 
 			this.barEnd1.pushCallbacks('upd', this);
 			this.barEnd2.pushCallbacks('upd', this);
@@ -220,7 +237,8 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 			this.barCenter._mvTo(center, {forced: true});
 			return this;
 		}
-		, addBall: function(aBalls){
+		, addBalls: function(aBalls){
+			if(_.isUndefined(aBalls)) return this;
 			if(!_.isArray(aBalls)) aBalls = [aBalls];
 			var thisPong = this;
 
@@ -233,7 +251,7 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 		}
 		, enhanceBall: function(aBall){
 			var thisPong = this;
-			aBall.shadow = factory.newGvector(0, 0, {rad4grab: 0}); // at the start, init by 0
+			aBall.shadow = factory.newMctr(0, 0); // at the start, init by 0
 			aBall.updShadow = function(){
 				var shadow = utl.tri.prj(thisPong.barEnd1, thisPong.barEnd2, aBall);
 				aBall.shadow._mvTo(shadow, {forced:true, nocallback:true});
@@ -305,26 +323,46 @@ define(['underscore','utl','pjs'], function(_, utl,pjs){
 	};
 
 	var factory = {
-		newGvector: function(x, y){
-			var clone = Object.create(gvector);
+		newMctr: function(x, y){
+			if(!_.isNumber(x) || !_.isNumber(y)) throw 'mctr must be constructed with numbers.';
+			var clone = Object.create(mctr);
+			clone.init(x, y);
+			return clone;
+		}
+		, newGctr: function(x, y){
+			if(!_.isNumber(x) || !_.isNumber(y)) throw 'gctr must be constructed with numbers.';
+			var clone = Object.create(gctr);
 			clone.init(x, y);
 			return clone;
 		}
 		, newYoyo: function(fc, axls){
-			if(_.isUndefined(fc) || _.isUndefined(axls)) throw 'need 2 args.';
+			if(!_.isObject(fc) || !_.isObject(axls)) throw 'yoyo must be constructed with objects.';
+			if(fc.name !== 'gctr' || axls.name !== 'gctr') throw 'yoyo must be constructed with gctrs.';
 			var clone = Object.create(yoyo);
 			clone.init(fc, axls);
 			return clone;
 		}
-		, newSeesaw: function(fc, e1, e2){
-			if(_.isUndefined(fc) || _.isUndefined(e1) || _.isUndefined(e2)) throw 'need 3 args.';
+		, newSsw: function(fc, e1, e2){
+			if(!_.isObject(fc) || !_.isObject(e1) || !_.isObject(e2)) throw 'ssw must be constructed with objects.';
+			if(fc.name !== 'gctr' || e1.name !== 'gctr' || e2.name !== 'gctr') throw 'ssw must be constructed with gctrs.';
 			var clone = Object.create(seesaw);
 			clone.init(fc, e1, e2);
 			return clone;
 		}
-		, newPong: function(e1, e2, bl){
+		, newPong: function(e1, e2, bls){
+			if(!_.isObject(e1) || !_.isObject(e2)) throw 'pong must be constructed with objects.';
+			if(e1.name !== 'gctr' || e2.name !== 'gctr') throw 'pong must be constructed with gctrs.';
+			if(bls){
+				if(_.isArray(bls)){
+					for(var i = 0; i < bls.length; i++){
+						if(!_.isObject(bls[i])) throw 'pong must be constructed with objects.';
+					}
+				}else{
+					if(!_.isObject(bls)) throw 'pong must be constructed with objects.';
+				}
+			}
 			var clone = Object.create(pong);
-			clone.init(e1, e2, bl);
+			clone.init(e1, e2, bls);
 			return clone;
 		}
 	};

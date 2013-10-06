@@ -1,4 +1,4 @@
-define(['pjs','utlx','jquery'], function(pjs, utlx, $){
+define(['pjs','utlx','pjsx','jquery'], function(pjs, utlx, pjsx, $){
 	'use strict';
 
 	var loopon = false;
@@ -11,41 +11,47 @@ define(['pjs','utlx','jquery'], function(pjs, utlx, $){
 		}
 	});
 	var app = function(){
-		var which = 4;
+		var which = 5;
 
 		var fulcrum, end1, end2, ss;
 		var fulcrumA, axelA, axelA2, yyA;
 		var fulcrumB, axelB, yyB;
 		var pe1, pe2, pb, pb2, pb3, png;
+		var te1, te2, trs;
 
 		pjs.setup = function(){
 			pjs.size(500, 500);
 			pjs.frameRate(10);
 
 			if(which == 1){
-				fulcrum = new utlx.fac.newGvector(200, 200);
-				end1 = new utlx.fac.newGvector(250, 250);
-				end2 = new utlx.fac.newGvector(160, 130);
-				ss = new utlx.fac.newSeesaw(fulcrum, end1, end2);
+				fulcrum = new utlx.fac.newGctr(200, 200);
+				end1 = new utlx.fac.newGctr(250, 250);
+				end2 = new utlx.fac.newGctr(160, 130);
+				ss = new utlx.fac.newSsw(fulcrum, end1, end2);
 
 			}else if(which == 2){
-				axelA = new utlx.fac.newGvector(350, 300);
-				axelA2 = new utlx.fac.newGvector(250, 200);
-				fulcrumA = new utlx.fac.newGvector(300, 300);
+				axelA = new utlx.fac.newGctr(350, 300);
+				axelA2 = new utlx.fac.newGctr(250, 200);
+				fulcrumA = new utlx.fac.newGctr(300, 300);
 				yyA = new utlx.fac.newYoyo(fulcrumA, [axelA, axelA2]);
 
-				axelB = new utlx.fac.newGvector(150, 100);
-				fulcrumB = new utlx.fac.newGvector(100, 100);
+				axelB = new utlx.fac.newGctr(150, 100);
+				fulcrumB = new utlx.fac.newGctr(100, 100);
 				yyB = new utlx.fac.newYoyo(fulcrumB, axelB);
 
 			}else if(which == 4){
-				pe1 = new utlx.fac.newGvector(150, 100);
-				pe2 = new utlx.fac.newGvector(400, 150);
-				pb = new utlx.fac.newGvector(250, 50);
-				pb2 = new utlx.fac.newGvector(300, 50);
-				pb3 = new utlx.fac.newGvector(350, 45);
+				pe1 = new utlx.fac.newGctr(150, 100);
+				pe2 = new utlx.fac.newGctr(400, 150);
+				pb = new utlx.fac.newGctr(250, 50);
+				pb2 = new utlx.fac.newGctr(300, 50);
+				pb3 = new utlx.fac.newGctr(350, 45);
 				png = new utlx.fac.newPong(pe1, pe2, [pb, pb2, pb3]);
+				//png = new utlx.fac.newPong(pe1, pe2);
 				//png = new utlx.fac.newPong(pe1, pe2, pb);
+			}else if(which == 5){
+				te1 = new utlx.fac.newGctr(150, 100);
+				te2 = new utlx.fac.newGctr(400, 150);
+				trs = new pjsx.fac.newTorso(te1, te2);
 			}
 		};
 
@@ -60,7 +66,7 @@ define(['pjs','utlx','jquery'], function(pjs, utlx, $){
 				pjs.ellipse(ss.end1.x, ss.end1.y, 30, 30);
 				pjs.ellipse(ss.end2.x, ss.end2.y, 30, 30);
 				pjs.fill(0);
-				ss.show();
+				//ss.show();
 
 			}else if(which == 2){
 				yyA.mvTo(pjs.mouseX, pjs.mouseY);
@@ -85,6 +91,10 @@ define(['pjs','utlx','jquery'], function(pjs, utlx, $){
 					pjs.fill(0);
 					pjs.ellipse(shadow.x, shadow.y, 10, 10);
 				}
+			}else if(which == 5){
+				trs.update(pjs.mouseX, pjs.mouseY);
+				trs.draw();
+				trs.show();
 			}
 		};
 
@@ -96,6 +106,8 @@ define(['pjs','utlx','jquery'], function(pjs, utlx, $){
 				yyB.grb(pjs.mouseX, pjs.mouseY);
 			}else if(which == 4){
 				png.grb(pjs.mouseX, pjs.mouseY);
+			}else if(which == 5){
+				trs.grb(pjs.mouseX, pjs.mouseY);
 			}
 		};
 
@@ -107,6 +119,8 @@ define(['pjs','utlx','jquery'], function(pjs, utlx, $){
 				yyB.rls();
 			}else if(which == 4){
 				png.rls();
+			}else if(which == 5){
+				trs.rls();
 			}
 		};
 
